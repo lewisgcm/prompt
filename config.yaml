@@ -1,0 +1,28 @@
+default-model: bedrock-claude-3-haiku
+models:
+    bedrock-claude-3-haiku:
+        provider: bedrock
+        settings:
+            region: us-east-1
+            model-id: anthropic.claude-3-haiku-20240307-v1:0
+        tools:
+            - top_song
+    bedrock-sonnet-3.5-v1:
+        provider: bedrock
+        settings:
+            region: us-east-1
+            model-id: anthropic.claude-3-5-sonnet-20240620-v1:0
+    bedrock-titan-premier:
+        provider: bedrock
+        settings:
+            region: us-east-1
+            model-id: amazon.titan-text-premier-v1:0
+tools:
+    top_song:
+        command: /Users/lewis/Development/prompt/example-tool.sh
+        description: Get the most popular song played on a radio station.
+        arguments:
+            sign:
+                type: string
+                description: The call sign for the radio station for which you want the most popular song. Example calls signs are WZPZ and WKRP.
+                required: true
