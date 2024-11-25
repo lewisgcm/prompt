@@ -7,7 +7,7 @@ import (
 )
 
 type Provider interface {
-	Build(map[string]string, map[string]internal.ToolConfig) (*Model, error)
+	Build(string, map[string]string, map[string]internal.ToolConfig) (*Model, error)
 }
 
 type Model interface {
@@ -18,10 +18,10 @@ type Message interface {
 	Write(writer io.Writer)
 }
 
-func FromProviderName(providerName string, settings map[string]string, toolConfig map[string]internal.ToolConfig) (Model, error) {
+func FromProviderName(providerName string, conversationId string, settings map[string]string, toolConfig map[string]internal.ToolConfig) (Model, error) {
 	switch providerName {
 	case "bedrock":
-		model, err := BedrockProvider{}.Build(settings, toolConfig)
+		model, err := BedrockProvider{}.Build(conversationId, settings, toolConfig)
 		if err != nil {
 			return nil, fmt.Errorf("failed to build bedrock model %w", err)
 		}

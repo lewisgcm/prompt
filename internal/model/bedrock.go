@@ -1,19 +1,24 @@
 package model
 
 import (
+	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/document"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
+
+	smithydocumentjson "github.com/aws/smithy-go/document/json"
+	"os"
 	"prompt/internal"
 	"prompt/internal/tool"
 )
 
 type BedrockProvider struct{}
 
-func (b BedrockProvider) Build(settings map[string]string, toolConfig map[string]internal.ToolConfig) (Model, error) {
+func (b BedrockProvider) Build(conversationId string, settings map[string]string, toolConfig map[string]internal.ToolConfig) (Model, error) {
 	region, hasRegion := settings["region"]
 	modelId, hasModelId := settings["model-id"]
 
@@ -35,9 +40,10 @@ type BedrockModel struct {
 }
 
 type BedrockModelConfig struct {
-	Region  string
-	ModelId string
-	Tools   map[string]internal.ToolConfig
+	Region         string
+	ModelId        string
+	Tools          map[string]internal.ToolConfig
+	ConversationId string
 }
 
 type bedrockToolSchemaArgument struct {
@@ -52,7 +58,7 @@ type bedrockToolSchema struct {
 }
 
 func buildBedrockToolConfig(modelConfig BedrockModelConfig) *types.ToolConfiguration {
-	tools := []types.Tool{}
+	var tools []types.Tool
 	for toolName, toolConfig := range modelConfig.Tools {
 		required := []string{}
 		properties := map[string]bedrockToolSchemaArgument{}
@@ -66,7 +72,7 @@ func buildBedrockToolConfig(modelConfig BedrockModelConfig) *types.ToolConfigura
 			}
 		}
 
-		tool := &types.ToolMemberToolSpec{
+		t := &types.ToolMemberToolSpec{
 			Value: types.ToolSpecification{
 				Name:        &toolName,
 				Description: &toolConfig.Description,
@@ -76,7 +82,7 @@ func buildBedrockToolConfig(modelConfig BedrockModelConfig) *types.ToolConfigura
 			},
 		}
 
-		tools = append(tools, tool)
+		tools = append(tools, t)
 	}
 
 	var toolConfig *types.ToolConfiguration
@@ -147,6 +153,61 @@ func buildBedrockMessage(message interface{}) (*types.Message, error) {
 	}
 
 	return nil, fmt.Errorf("unsupported message type")
+}
+
+func (b BedrockModel) WriteMessages(messages []types.Message) error {
+	os.Mkdir(".conversations", 0755)
+	filePath := ".conversations/" + b.config.ModelId + "-" + b.config.ConversationId + ".jsonnd"
+	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+
+	if err != nil {
+		return err
+	}
+
+	writer := bufio.NewWriter(f)
+
+	for _, e := range messages {
+		bytes, err := smithydocumentjson.NewEncoder().Encode(&e)
+		if err != nil {
+			return err
+		}
+		writer.WriteString(string(bytes))
+		writer.WriteString("\n")
+	}
+
+	writer.Flush()
+	return nil
+}
+
+func (b BedrockModel) LoadMessages() ([]types.Message, error) {
+	os.Mkdir(".conversations", 0755)
+
+	if _, err := os.Stat(".conversations/" + b.config.ModelId + "-" + b.config.ConversationId + ".jsonnd"); errors.Is(err, os.ErrNotExist) {
+		return []types.Message{}, nil
+	}
+
+	file, err := os.Open(".conversations/" + b.config.ModelId + "-" + b.config.ConversationId + ".jsonnd")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	messages := []types.Message{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		d := types.Message{}
+		e := document.NewLazyDocument(scanner.Text()).UnmarshalSmithyDocument(types.Message{})
+		if e != nil {
+			return nil, e
+		}
+		messages = append(messages, d)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }
 
 func (b BedrockModel) Send(input interface{}) error {

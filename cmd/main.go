@@ -23,8 +23,8 @@ func main() {
 				Usage: "name of the model to use for this prompt",
 			},
 			&cli.StringFlag{
-				Name:     "conversation-file",
-				Usage:    "file to store the conversation",
+				Name:     "conversation-id",
+				Usage:    "id of the conversation to persist messages",
 				Required: true,
 			},
 			&cli.BoolFlag{
@@ -73,7 +73,7 @@ func main() {
 				}
 			}
 
-			model, err := model2.FromProviderName(modelConfig.Provider, modelConfig.Settings, tools)
+			model, err := model2.FromProviderName(cli.String("conversation-id"), modelConfig.Provider, modelConfig.Settings, tools)
 			if err != nil {
 				return err
 			}

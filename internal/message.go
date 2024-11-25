@@ -13,3 +13,11 @@ type DocumentInputMessage struct {
 	Format   string
 	Document []uint8
 }
+
+type Message struct {
+	Role string
+}
+
+type MessageContentBlock struct {
+	Role string
+}

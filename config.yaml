@@ -7,6 +7,7 @@ models:
             model-id: anthropic.claude-3-haiku-20240307-v1:0
         tools:
             - top_song
+            - files_in_directory
     bedrock-sonnet-3.5-v1:
         provider: bedrock
         settings:
@@ -26,3 +27,6 @@ tools:
                 type: string
                 description: The call sign for the radio station for which you want the most popular song. Example calls signs are WZPZ and WKRP.
                 required: true
+    files_in_directory:
+        command: /bin/ls
+        description: Get a list of files based on the current directory
