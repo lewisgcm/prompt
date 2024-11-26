@@ -3,10 +3,12 @@ import path from "path";
 import {program} from "commander";
 import {loadConfigFile} from "./config";
 import {ToolPluginManager} from "./tool";
-import {resolveModel} from "./model";
+import {resolveConversationStore, resolveModel} from "./model";
 import {pluck} from "./util";
 import {Prompt} from "./model/model";
 import * as fs from "node:fs";
+import chalk from "chalk";
+import ora from "ora";
 
 const DEFAULT_HOME_DIRECTORY = os.homedir() + path.sep + '.prompt';
 
@@ -36,8 +38,13 @@ const options = program.opts();
         program.error(`could not find configuration for model '${modelName}'`);
     }
 
+    const conversationStore = resolveConversationStore(modelConfig, options.homeDir, options.conversation);
+    if (!conversationStore) {
+        program.error(`could not load conversation store for '${options.conversation}'`);
+    }
+
     const toolPluginManager = ToolPluginManager.fromEntryFiles(pluck(config["tool-plugins"] || {}, ...(modelConfig.tools || [])));
-    const model = resolveModel(modelName, modelConfig, toolPluginManager);
+    const model = resolveModel(modelConfig, toolPluginManager, conversationStore);
     if (!model) {
         program.error(`failed to resolve model for the provider '${modelConfig.provider}'`);
     }
@@ -47,8 +54,34 @@ const options = program.opts();
         program.error(`please specify either a text, image or document input as a prompt`);
     }
 
-    model.send(prompt).subscribe((response) => {
-        console.log(response);
+    const spinner = ora(`Awaiting response from ${chalk.red(modelName)}`).start();
+    model.send(prompt).subscribe({
+        next: (response) => {
+            spinner.stop();
+
+            switch (response.event) {
+                case "max_tokens":
+                    console.log(chalk.red(`reached the max tokens of the model [${response.usage.totalTokens}]`));
+                    break;
+                case "response":
+                    response.content.forEach((c) => {
+                        console.log(c.value)
+                    });
+                    spinner.start();
+                    break;
+                case "end":
+                    console.log('');
+                    console.log(`Total tokens: [${response.usage.totalTokens}], Input tokens: [${response.usage.inputTokens}], Output tokens: [${response.usage.outputTokens}]`);
+                    break;
+            }
+        },
+        complete: async () => {
+            await conversationStore.flush();
+        },
+        error: (err) => {
+            spinner.stop();
+            console.log(err);
+        }
     });
 })();
 
