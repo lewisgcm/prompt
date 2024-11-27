@@ -68,6 +68,43 @@ program.command('setup')
         }
     });
 
+program.command('select-model')
+    .description('Command used to select a configured model and then write the model name to an output file.')
+    .option('-f --config-file <file>', 'YAML configuration file for prompt', DEFAULT_CONFIG_DIRECTORY)
+    .option('-d --home-dir <directory>', 'directory used to store chat history', DEFAULT_HOME_DIRECTORY)
+    .requiredOption('--conversation-out-file <file>', 'output file to write the conversation name into')
+    .requiredOption('--model-out-file <file>', 'output file to write the selected model name into')
+    .action(async (options) => {
+        try {
+            const originalConfig = await fileExists(options.configFile)
+                ? await loadConfigFile(options.configFile)
+                : {};
+
+            const chats = fs.readdirSync(options.homeDir + path.sep + 'chats');
+
+            const chat: string = await select({
+                message: 'Select chat',
+                choices: [...chats, 'Create new'],
+            });
+
+            const conversationName: string = chat != 'Create new' ? chat : await input({
+                message: 'Enter the name'
+            });
+
+            const selectedModel: string = await select({
+                message: 'Select model',
+                choices: Object.keys(originalConfig.models ?? {})
+            });
+
+            fs.writeFileSync(options.modelOutFile, selectedModel);
+            fs.writeFileSync(options.conversationOutFile, conversationName);
+        } catch (e) {
+            if (!(e instanceof ExitPromptError)) {
+                program.error(e?.toString() || '');
+            }
+        }
+    });
+
 program.parse();
 
 async function converseCommand(options: any) {
@@ -82,7 +119,7 @@ async function converseCommand(options: any) {
         program.error(`could not find configuration for model '${modelName}'`);
     }
 
-    const conversationStore = resolveConversationStore(modelConfig, options.homeDir, options.conversation);
+    const conversationStore = resolveConversationStore(modelConfig, options.homeDir + path.sep + 'chats', options.conversation);
     if (!conversationStore) {
         program.error(`could not load conversation store for '${options.conversation}'`);
     }

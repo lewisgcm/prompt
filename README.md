@@ -6,7 +6,7 @@ Prompt cli enables you to run prompts against AWS bedrock models directly from y
 
 ### Installation
 
-First install prompt globally via NPM using the `npm install -g prompt-cli` command. Then run the `prompt setup` to
+First download this repository and run the `npm install` command, then `npm install -g tsx` and finally `npm link`. Then run the `prompt setup` to
 configure a default model. Use the `prompt -h` to get a list of available commands and settings.
 
 **NOTE**: You need to have AWS credentials to run prompt, you typically get those by running `aws sso login` if your

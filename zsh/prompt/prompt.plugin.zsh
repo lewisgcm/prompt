@@ -3,12 +3,17 @@
 export PROMPT_MODEL_ID=""
 export PROMPT_CHAT_ID=""
 
-change_prompt() {
-  export PROMPT_CHAT_ID="$1"
-  export PROMPT_MODEL_ID="$2"
+prompt_change() {
+  conv_file=$(mktemp /tmp/prompt-conv.XXXXXX)
+  model_file=$(mktemp /tmp/prompt-model.XXXXXX)
+
+  prompt select-model --conversation-out-file "$conv_file" --model-out-file "$model_file"
+
+  export PROMPT_CHAT_ID=`cat "$conv_file"`
+  export PROMPT_MODEL_ID=`cat "$model_file"`
 }
 
-function end_prompt() {
+function prompt_end() {
   unset PROMPT_CHAT_ID
   unset PROMPT_MODEL_ID
 }

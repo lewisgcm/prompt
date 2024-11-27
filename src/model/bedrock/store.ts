@@ -41,6 +41,6 @@ export class BedrockStore extends ConversationStore<Message> {
     }
 
     private filePath(): string {
-        return `${this.homeDir}${path.sep}${this.conversationId}.jsonnd`;
+        return `${this.homeDir}${path.sep}${this.conversationId}`;
     }
 }

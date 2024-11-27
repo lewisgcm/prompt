@@ -13,7 +13,7 @@ const SAVED_HISTORY = [
 
 test('simple bedrock store test', async () => {
     const dir = "test_output/simple/.prompt";
-    fs.rmSync("test_output/simple/.prompt/test-id.jsonnd", {force: true});
+    fs.rmSync("test_output/simple/.prompt/test-id", {force: true});
 
     const bedrockStore = new BedrockStore(dir, 'test-id');
 
