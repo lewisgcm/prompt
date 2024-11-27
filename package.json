@@ -2,7 +2,9 @@
   "name": "prompt",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
+    "build": "node ./build.js",
     "run": "tsx src/main.ts",
     "test": "ts-jest"
   },
@@ -24,6 +26,8 @@
     "@jest/globals": "^29.7.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.9.3",
+    "esbuild": "^0.24.0",
+    "esbuild-plugin-tsc": "^0.4.0",
     "ts-jest": "^29.2.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
