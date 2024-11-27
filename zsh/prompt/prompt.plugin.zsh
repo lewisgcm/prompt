@@ -1,14 +1,14 @@
 #/usr/bin/env bash
 
-PROMPT_MODEL_ID=""
-PROMPT_CHAT_ID=""
+export PROMPT_MODEL_ID=""
+export PROMPT_CHAT_ID=""
 
-agent() {
-  PROMPT_CHAT_ID="$1"
-  PROMPT_MODEL_ID="$2"
+change_prompt() {
+  export PROMPT_CHAT_ID="$1"
+  export PROMPT_MODEL_ID="$2"
 }
 
-function endprompt() {
+function end_prompt() {
   unset PROMPT_CHAT_ID
   unset PROMPT_MODEL_ID
 }

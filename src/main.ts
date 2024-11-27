@@ -1,16 +1,22 @@
+#!/usr/bin/env tsx
+
 import os from "os";
 import path from "path";
 import {program} from "commander";
-import {loadConfigFile} from "./config";
+import {loadConfigFile, writeConfigFile} from "./config";
 import {ToolPluginManager} from "./tool";
 import {resolveConversationStore, resolveModel} from "./model";
-import {pluck} from "./util";
+import {fileExists, pluck} from "./util";
 import {Prompt} from "./model/model";
 import * as fs from "node:fs";
 import chalk from "chalk";
 import ora from "ora";
+import {addModel} from "./model/configurer";
+import {select, input} from '@inquirer/prompts'
+import {ExitPromptError} from '@inquirer/core'
 
 const DEFAULT_HOME_DIRECTORY = os.homedir() + path.sep + '.prompt';
+const DEFAULT_CONFIG_DIRECTORY = DEFAULT_HOME_DIRECTORY + path.sep + 'config.yaml';
 
 program
     .name('prompt')
@@ -18,19 +24,57 @@ program
     .version('0.1.0');
 
 program
-    .requiredOption('-f --config-file <file>', 'YAML configuration file for prompt')
+    .command('converse', {isDefault: true})
+    .option('-f --config-file <file>', 'YAML configuration file for prompt', DEFAULT_CONFIG_DIRECTORY)
     .option('-d --home-dir <directory>', 'directory used to store chat history', DEFAULT_HOME_DIRECTORY)
-    .requiredOption('-c --conversation <directory>', 'unique identifier to persist prompts for the conversation')
-    .option('-m --model <model>', 'model name from the YAML file, to use for the prompt')
+    .requiredOption('-c --conversation <conversation>', 'unique identifier to persist prompts for the conversation', process.env.PROMPT_CHAT_ID)
+    .option('-m --model <model>', 'model name from the YAML file, to use for the prompt', process.env.PROMPT_MODEL_ID)
     .option('-it --input-text <prompt>', 'textual prompt to send to the agent')
     .option('-id --input-document <file>', 'document file to send to the agent')
-    .option('-ii --input-image <file>', 'image file to send to the agent');
+    .option('-ii --input-image <file>', 'image file to send to the agent')
+    .action(async (options) => {
+        await converseCommand(options);
+    });
+
+program.command('setup')
+    .option('-f --config-file <file>', 'YAML configuration file for prompt', DEFAULT_CONFIG_DIRECTORY)
+    .option('-d --home-dir <directory>', 'directory used to store chat history', DEFAULT_HOME_DIRECTORY)
+    .action(async (options) => {
+        try {
+            const originalConfig = await fileExists(options.configFile)
+                ? await loadConfigFile(options.configFile)
+                : {};
+
+            const configure = Object.entries(originalConfig).length == 0 ? 'Add model' : await select({
+                message: 'What would you like to configure?',
+                choices: ['Add model', 'Add Plugin']
+            });
+
+            if (configure == 'Add model') {
+                await writeConfigFile(options.homeDir, options.configFile, await addModel(originalConfig));
+            } else {
+                const toolName = await input({message: 'Enter the name of the plugin'});
+                const toolLocation = await input({message: 'Enter the location of the plugin (relative to the .prompt directory)'});
+
+                originalConfig["tool-plugins"] = originalConfig["tool-plugins"] || {};
+                originalConfig["tool-plugins"][toolName] = toolLocation;
+
+                await writeConfigFile(options.homeDir, options.configFile, originalConfig);
+            }
+        } catch (e) {
+            if (!(e instanceof ExitPromptError)) {
+                program.error(e?.toString() || '');
+            }
+        }
+    });
 
 program.parse();
 
-const options = program.opts();
+async function converseCommand(options: any) {
+    if (!await fileExists(options.configFile)) {
+        program.error('no config file found. run \'prompt setup\' to configure one.');
+    }
 
-(async () => {
     const config = await loadConfigFile(options.configFile);
     const modelName = options.model || config["default-model"];
     const modelConfig = (config?.models ?? {})[modelName];
@@ -83,7 +127,7 @@ const options = program.opts();
             console.log(err);
         }
     });
-})();
+}
 
 // TODO: Add validation, and extension checking (with types). Otherwise it works.
 function buildPrompt(options: { inputText?: string, inputDocument?: string, inputImage?: string }): Prompt | undefined {

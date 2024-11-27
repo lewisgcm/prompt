@@ -3,6 +3,7 @@ import path from "path";
 import {Message} from "@aws-sdk/client-bedrock-runtime";
 
 import {ConversationStore} from "../model";
+import {fileExists} from "../../util";
 
 export class BedrockStore extends ConversationStore<Message> {
     messages: Message[] = [];
@@ -12,9 +13,7 @@ export class BedrockStore extends ConversationStore<Message> {
             return this.messages;
         }
 
-        try {
-            await fs.stat(this.filePath());
-        } catch (err) {
+        if (!await fileExists(this.filePath())) {
             return this.messages;
         }
 

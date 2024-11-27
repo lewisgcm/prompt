@@ -1,5 +1,6 @@
 import yaml from "js-yaml";
 import {promises} from "node:fs";
+import fs from "node:fs/promises";
 
 export interface ModelConfig {
     provider: string,
@@ -31,5 +32,15 @@ export async function loadConfigFile(path: string): Promise<Config> {
         return yaml.load(rawConfig.toString()) as Config;
     } catch (e) {
         throw new InvalidConfigurationError("failed to parse config file");
+    }
+}
+
+export async function writeConfigFile(path: string, filename: string, config: Config): Promise<void> {
+    try {
+        await fs.mkdir(path, {recursive: true});
+        const rawConfig = yaml.dump(config);
+        await promises.writeFile(filename, rawConfig);
+    } catch (e) {
+        throw new Error("failed to write config file");
     }
 }
