@@ -3,6 +3,8 @@ import {Message} from "@aws-sdk/client-bedrock-runtime";
 
 import * as fs from "node:fs";
 import {BedrockStore} from "./store";
+import path from "path";
+import {after} from "node:test";
 
 const SAVED_HISTORY = [
     {
@@ -11,10 +13,10 @@ const SAVED_HISTORY = [
     }
 ] as Message[];
 
-test('simple bedrock store test', async () => {
-    const dir = "test_output/simple/.prompt";
-    fs.rmSync("test_output/simple/.prompt/test-id", {force: true});
+const TEST_OUTPUT = path.join(__dirname, "..", "..", "..", "test", "test_output");
 
+test('simple bedrock store test', async () => {
+    const dir = path.join(TEST_OUTPUT, "simple");
     const bedrockStore = new BedrockStore(dir, 'test-id');
 
     // Verify history was saved on existing object
@@ -28,4 +30,10 @@ test('simple bedrock store test', async () => {
     // Ready again
     const bedrockStoreAfterWrite = new BedrockStore(dir, 'test-id');
     expect(await bedrockStoreAfterWrite.getHistory()).toStrictEqual(SAVED_HISTORY);
+});
+
+after(() => {
+    const dir = path.join(TEST_OUTPUT, "simple");
+    fs.rmSync(path.join(dir, "test-id"), {force: true});
+    fs.rmdirSync(path.join(dir));
 });

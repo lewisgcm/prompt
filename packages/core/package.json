@@ -1,0 +1,26 @@
+{
+  "name": "core",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "node ./build.js",
+    "run": "src/main.ts",
+    "test": "jest"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-bedrock": "^3.699.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.699.0",
+    "js-yaml": "^4.1.0",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.9.3",
+    "esbuild": "^0.24.0",
+    "esbuild-plugin-tsc": "^0.4.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -75,7 +75,7 @@ export class BedrockModel extends Model {
                     return {
                         toolResult: await mapBedrockToolUseBlockToToolUseResult(
                             toolUseBlock,
-                            (args) => this._toolPluginManager.invokeTool(toolUseBlock.name!, args)
+                            async (args) => await this._toolPluginManager.invokeTool(toolUseBlock.name!, args)
                         )
                     } as ContentBlock.ToolResultMember;
                 }));

@@ -32,7 +32,7 @@ export class BedrockStore extends ConversationStore<Message> {
     }
 
     async flush(): Promise<void> {
-        await fs.mkdir(this.homeDir, {recursive: true});
+        await fs.mkdir(this.directory, {recursive: true});
 
         const file = await fs.open(this.filePath(), 'w');
         for (const message of this.messages) {
@@ -41,6 +41,6 @@ export class BedrockStore extends ConversationStore<Message> {
     }
 
     private filePath(): string {
-        return `${this.homeDir}${path.sep}${this.conversationId}`;
+        return path.join(this.directory, this.conversationId);
     }
 }

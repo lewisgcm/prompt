@@ -23,7 +23,7 @@ export abstract class Model {
 
 export abstract class ConversationStore<T> {
     constructor(
-        protected readonly homeDir: string,
+        protected readonly directory: string,
         protected readonly conversationId: string) {
     }
 

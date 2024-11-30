@@ -25,8 +25,8 @@ export class ToolPluginManager {
         return this._plugins;
     }
 
-    invokeTool(toolName: string, toolArguments: any): any {
-        if (this._plugins.hasOwnProperty(toolName)) {
+    async invokeTool(toolName: string, toolArguments: any): Promise<any> {
+        if (!!this._plugins[toolName]) {
             return this._plugins[toolName].tool(toolArguments);
         }
 
