@@ -46,9 +46,9 @@ export function mapBedrockResponseToEndEvent(commandOutput: ConverseCommandOutpu
     }
 }
 
-export function mapBedrockToolUseBlockToToolUseResult(toolUseBlock: ToolUseBlock, toolCall: (args: any) => any): ToolResultBlock {
+export async function mapBedrockToolUseBlockToToolUseResult(toolUseBlock: ToolUseBlock, toolCall: (args: any) => Promise<any>): Promise<ToolResultBlock> {
     try {
-        const response = toolCall(toolUseBlock.input);
+        const response = await toolCall(toolUseBlock.input);
         return {
             toolUseId: toolUseBlock.toolUseId,
             content: [
@@ -63,7 +63,7 @@ export function mapBedrockToolUseBlockToToolUseResult(toolUseBlock: ToolUseBlock
             toolUseId: toolUseBlock.toolUseId,
             content: [
                 {
-                    text: e,
+                    text: e!.toString(),
                 }
             ],
             status: 'error',

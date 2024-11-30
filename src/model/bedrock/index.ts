@@ -71,14 +71,16 @@ export class BedrockModel extends Model {
         switch (response.stopReason) {
             case 'tool_use':
                 const toolUseBlocks = response.output?.message?.content?.filter((c) => !!c.toolUse).map((c) => c.toolUse) || [];
-                const toolResults = toolUseBlocks.map((toolUseBlock) => {
+                const toolResults = await Promise.all(toolUseBlocks.map(async (toolUseBlock) => {
                     return {
-                        toolResult: mapBedrockToolUseBlockToToolUseResult(
+                        toolResult: await mapBedrockToolUseBlockToToolUseResult(
                             toolUseBlock,
                             (args) => this._toolPluginManager.invokeTool(toolUseBlock.name!, args)
                         )
                     } as ContentBlock.ToolResultMember;
-                });
+                }));
+
+                console.log(toolResults);
 
                 this._send(subject, {
                     ...command, messages: [...command.messages, response.output?.message!, {

@@ -124,7 +124,7 @@ async function converseCommand(options: any) {
         program.error(`could not load conversation store for '${options.conversation}'`);
     }
 
-    const toolPluginManager = ToolPluginManager.fromEntryFiles(pluck(config["tool-plugins"] || {}, ...(modelConfig.tools || [])));
+    const toolPluginManager = await ToolPluginManager.fromEntryFiles(pluck(config["tool-plugins"] || {}, ...(modelConfig.tools || [])));
     const model = resolveModel(modelConfig, toolPluginManager, conversationStore);
     if (!model) {
         program.error(`failed to resolve model for the provider '${modelConfig.provider}'`);

@@ -33,16 +33,22 @@ export class ToolPluginManager {
         return undefined;
     }
 
-    static fromEntryFiles(entryFiles: { [key: string]: string }): ToolPluginManager {
-        const plugins = Object.entries(entryFiles).reduce((dict, [key, value]) => {
-            const module = require(value);
+    static async fromEntryFiles(entryFiles: { [key: string]: string }): Promise<ToolPluginManager> {
+        const tools = await Promise.all(Object.entries(entryFiles).map(async ([key, value]) => {
+            const module = await import(value);
             return {
-                ...dict,
-                [key]: {
+                name: key,
+                tool: {
                     schema: ToolPluginManager.validatePluginSchema(key, module.schema),
                     tool: module.tool as (any: any) => (any),
                 }
             }
+        }));
+        const plugins = tools.reduce((dict, tool) => {
+            return {
+                ...dict,
+                [tool.name]: tool.tool
+            };
         }, {});
 
         return new ToolPluginManager(plugins);

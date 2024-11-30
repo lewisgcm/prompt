@@ -46,6 +46,10 @@ theme.
 PROMPT='${ret_status} %{$fg[cyan]%}%c%{$reset_color%} $(prompt_model_and_chat) $(git_prompt_info)'
 ```
 
+## Usage
+
+* ``
+
 ## Plugins
 
 Prompt provides support for model function calling through plugins. Plugins are javascript modules exporting the
