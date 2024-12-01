@@ -3,10 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "npm --workspace=@prompt/cli run build",
     "test": "jest",
     "coverage": "jest --coverage"
   },
+  "bin": {
+    "prompt": "./packages/cli/dist/prompt.js"
+  },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "esbuild-plugin-tsc": "^0.4.0"
+  }
 }

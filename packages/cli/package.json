@@ -3,12 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "node ./build.js",
+    "build": "tsx ./build.ts",
     "run": "src/main.ts",
     "test": "jest"
-  },
-  "bin": {
-    "prompt": "./src/main.ts"
   },
   "keywords": [],
   "author": "",
