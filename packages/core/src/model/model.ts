@@ -18,7 +18,9 @@ export type ModelResponseEvent = { event: 'end', usage: Usage }
     | { event: 'max_tokens', usage: Usage };
 
 export abstract class Model {
-    abstract send(prompt: Prompt): Subject<ModelResponseEvent>;
+    abstract responses(): Subject<ModelResponseEvent>;
+
+    abstract send(prompt: Prompt): void;
 }
 
 export abstract class ConversationStore<T> {

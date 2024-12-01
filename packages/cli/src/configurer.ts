@@ -1,7 +1,8 @@
-import {select, checkbox, input} from "@inquirer/prompts";
-import {Config} from "../config";
 import {BedrockClient, ListFoundationModelsCommand} from "@aws-sdk/client-bedrock";
-import {BedrockConfig} from "./bedrock";
+
+import {select, checkbox, input} from "@inquirer/prompts";
+import {Config} from "@prompt/core";
+import {BedrockConfig} from "@prompt/core";
 
 export async function addModel(config: Config): Promise<Config> {
     const provider = await select({

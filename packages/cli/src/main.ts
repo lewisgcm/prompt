@@ -3,15 +3,16 @@
 import os from "os";
 import path from "path";
 import {program} from "commander";
-import {loadConfigFile, writeConfigFile} from "./config";
-import {ToolPluginManager} from "./tool";
-import {resolveConversationStore, resolveModel} from "./model";
-import {fileExists, pluck} from "./util";
-import {Prompt} from "./model/model";
+import {loadConfigFile, writeConfigFile} from "@prompt/core";
+import {ToolPluginManager} from "@prompt/core";
+import {resolveConversationStore, resolveModel} from "@prompt/core";
+import {fileExists, pluck} from "@prompt/core";
+
+import {Prompt} from "@prompt/core";
 import * as fs from "node:fs";
 import chalk from "chalk";
 import ora from "ora";
-import {addModel} from "./model/configurer";
+import {addModel} from "./configurer";
 import {select, input} from '@inquirer/prompts'
 import {ExitPromptError} from '@inquirer/core'
 
@@ -136,13 +137,15 @@ async function converseCommand(options: any) {
     }
 
     const spinner = ora(`Awaiting response from ${chalk.red(modelName)}`).start();
-    model.send(prompt).subscribe({
+    model.send(prompt);
+    model.responses().subscribe({
         next: (response) => {
             spinner.stop();
 
             switch (response.event) {
                 case "max_tokens":
                     console.log(chalk.red(`reached the max tokens of the model [${response.usage.totalTokens}]`));
+                    model.responses().complete();
                     break;
                 case "response":
                     response.content.forEach((c) => {
@@ -153,6 +156,7 @@ async function converseCommand(options: any) {
                 case "end":
                     console.log('');
                     console.log(`Total tokens: [${response.usage.totalTokens}], Input tokens: [${response.usage.inputTokens}], Output tokens: [${response.usage.outputTokens}]`);
+                    model.responses().complete();
                     break;
             }
         },

@@ -1,7 +1,6 @@
 {
-  "name": "core",
+  "name": "@prompt/core",
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
     "build": "node ./build.js",
     "run": "src/main.ts",

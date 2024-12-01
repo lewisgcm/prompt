@@ -36,13 +36,13 @@ export class BedrockModel extends Model {
         private readonly _toolPluginManager: ToolPluginManager,
         private readonly _config: BedrockConfig,
         private readonly _conversationStore: BedrockStore,
+        private readonly _responseSubject = new Subject<ModelResponseEvent>(),
         private readonly _bedrockClient: BedrockRuntimeClient = new BedrockRuntimeClient({region: _config.settings.region})
     ) {
         super();
     }
 
     private async _send(
-        subject: Subject<ModelResponseEvent>,
         command: {
             messages: Message[],
             modelId: string,
@@ -54,8 +54,8 @@ export class BedrockModel extends Model {
 
         const response = await this._bedrockClient.send(new ConverseCommand(command));
         const responseMessageContents = mapBedrockMessageBlockContentToModelResponseMessageContent(response.output?.message?.content || []);
-        if (responseMessageContents) {
-            subject.next({
+        if (responseMessageContents.length > 0) {
+            this._responseSubject.next({
                 event: "response",
                 content: responseMessageContents,
             });
@@ -80,9 +80,7 @@ export class BedrockModel extends Model {
                     } as ContentBlock.ToolResultMember;
                 }));
 
-                console.log(toolResults);
-
-                this._send(subject, {
+                this._send({
                     ...command, messages: [...command.messages, response.output?.message!, {
                         role: 'user',
                         content: toolResults
@@ -90,22 +88,23 @@ export class BedrockModel extends Model {
                 }, maxRecursion--);
                 break;
             case 'max_tokens':
-                subject.next(mapBedrockResponseToMaxTokensEvent(response));
+                this._responseSubject.next(mapBedrockResponseToMaxTokensEvent(response));
                 break;
             default:
-                subject.next(mapBedrockResponseToEndEvent(response));
-                subject.complete();
+                this._responseSubject.next(mapBedrockResponseToEndEvent(response));
         }
     }
 
-    send(prompt: Prompt): Subject<ModelResponseEvent> {
-        const subject = new Subject<ModelResponseEvent>();
+    responses(): Subject<ModelResponseEvent> {
+        return this._responseSubject;
+    }
+
+    send(prompt: Prompt) {
         const toolConfig = mapPluginManagerToBedrockToolConfiguration(this._toolPluginManager.getAvailableTools());
 
         (async () => {
             const messages = await this._conversationStore.getHistory();
             await this._send(
-                subject,
                 {
                     toolConfig: toolConfig,
                     modelId: this._config.settings["model-id"],
@@ -120,7 +119,5 @@ export class BedrockModel extends Model {
                     ],
                 }, MAX_RECURSION);
         })();
-
-        return subject;
     }
 }
