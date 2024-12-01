@@ -4,7 +4,8 @@
   "scripts": {
     "build": "node ./build.js",
     "run": "src/main.ts",
-    "test": "jest"
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "license": "ISC",
   "dependencies": {

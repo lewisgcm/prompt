@@ -36,6 +36,7 @@ export class ToolPluginManager {
     static async fromEntryFiles(entryFiles: { [key: string]: string }): Promise<ToolPluginManager> {
         const tools = await Promise.all(Object.entries(entryFiles).map(async ([key, value]) => {
             const module = await import(value);
+
             return {
                 name: key,
                 tool: {
@@ -55,7 +56,7 @@ export class ToolPluginManager {
     }
 
     private static validatePluginSchema(name: string, schema: ToolSchema): ToolSchema {
-        if (!/\S/.test(schema.description)) {
+        if (!schema.description || !schema.description.trim()) {
             throw new InvalidPluginError(`Plugin ${name} does not have a description`);
         }
 
@@ -64,7 +65,7 @@ export class ToolPluginManager {
                 throw new InvalidPluginError(`Plugin ${name}, argument ${key} must have a type as 'string', 'number' or 'boolean'`);
             }
 
-            if (!/\S/.test(value.description)) {
+            if (!value.description || !value.description.trim()) {
                 throw new InvalidPluginError(`Plugin ${name}, argument ${key} does not have a description`);
             }
         });

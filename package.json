@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "build": "npm --workspace=@prompt/cli run build",
-    "test": "jest",
-    "coverage": "jest --coverage"
+    "test": "npm --workspace=@prompt/core run test"
   },
   "bin": {
     "prompt": "./packages/cli/dist/prompt.js"
