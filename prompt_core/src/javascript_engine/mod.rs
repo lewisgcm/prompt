@@ -1,13 +1,15 @@
 use rquickjs::loader::{BuiltinLoader, BuiltinResolver, ModuleLoader};
-use rquickjs::{async_with, AsyncContext, AsyncRuntime, CatchResultExt, Error, Module, Value};
+use rquickjs::{async_with, AsyncContext, AsyncRuntime, Error};
+
 pub struct JavascriptEngineModule {
     pub name: String,
     pub code: String,
 }
 
 pub struct JavascriptEngine {
-    context: AsyncContext,
+    pub context: AsyncContext,
 }
+
 pub async fn new(
     modules: Vec<JavascriptEngineModule>,
 ) -> anyhow::Result<JavascriptEngine, anyhow::Error> {
@@ -48,29 +50,36 @@ pub async fn new(
     Ok(JavascriptEngine { context })
 }
 
-pub async fn eval_module(
-    engine: &JavascriptEngine,
-    name: &str,
-) -> anyhow::Result<(), anyhow::Error> {
-    async_with!(engine.context => |ctx| {
-        let promise = Module::import(&ctx, name).catch(&ctx);
-        return match promise {
-            Ok(promise) => {
-                let result = promise.into_future::<Value>().await.catch(&ctx);
-                return if let Err(err) = result {
-                    Err(anyhow::Error::msg(format!("{:#?}", err)))
-                } else {
-                    let v = result.unwrap();
-                    println!("V: {:#?}", v);
-                    Ok(())
-                };
-            },
-            Err(err) => {
-                Err(anyhow::Error::msg(format!("{:#?}", err)))
-            }
-        }
-    })
-    .await?;
+#[macro_export]
+macro_rules! eval_module {
+    // This macro takes an expression of type `expr` and prints
+    // it as a string along with its result.
+    // The `expr` designator is used for expressions.
+    ($script_engine:expr, $name:expr, |$value:ident| { $($t:tt)* }) => {
+        rquickjs::async_with!($script_engine.context => |ctx| {
+        use rquickjs::{CatchResultExt};
 
-    Ok(())
+        let promise = rquickjs::Module::import(&ctx, $name).catch(&ctx);
+        return match promise {
+                Ok(promise) => {
+                    let result = promise.into_future::<Value>().await.catch(&ctx);
+                    return if let Err(err) = result {
+                        Err(anyhow::Error::msg(format!("{:#?}", err)))
+                    } else {
+                        let $value = result.unwrap();
+
+                        let fut = Box::pin(async move {
+                            $($t)*
+                        });
+
+                        fut.await
+                    };
+                },
+                Err(err) => {
+                    Err(anyhow::Error::msg(format!("{:#?}", err)))
+                }
+            }
+        })
+        .await
+    };
 }
