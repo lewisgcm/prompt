@@ -55,24 +55,20 @@ macro_rules! eval_module {
     // This macro takes an expression of type `expr` and prints
     // it as a string along with its result.
     // The `expr` designator is used for expressions.
-    ($script_engine:expr, $name:expr, |$value:ident| { $($t:tt)* }) => {
-        rquickjs::async_with!($script_engine.context => |ctx| {
+    ($script_engine:expr, $name:expr, |$ctx:ident,$value:ident| { $($t:tt)* }) => {
+        rquickjs::async_with!($script_engine.context => |$ctx| {
         use rquickjs::{CatchResultExt};
 
-        let promise = rquickjs::Module::import(&ctx, $name).catch(&ctx);
+        let promise = rquickjs::Module::import(&$ctx, $name).catch(&$ctx);
         return match promise {
                 Ok(promise) => {
-                    let result = promise.into_future::<Value>().await.catch(&ctx);
+                    let result = promise.into_future::<Value>().await.catch(&$ctx);
                     return if let Err(err) = result {
                         Err(anyhow::Error::msg(format!("{:#?}", err)))
                     } else {
                         let $value = result.unwrap();
 
-                        let fut = Box::pin(async move {
-                            $($t)*
-                        });
-
-                        fut.await
+                        $($t)*
                     };
                 },
                 Err(err) => {
