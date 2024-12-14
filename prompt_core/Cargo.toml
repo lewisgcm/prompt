@@ -1,0 +1,12 @@
+[package]
+name = "prompt_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde_yml = "0.0.12"
+serde = { version = "1.0.216", features = ["derive"] }
+tokio = "1.42.0"
+anyhow = "1.0.94"
+rquickjs = "0.8.1"
+llrt_modules = { git = "https://github.com/awslabs/llrt.git" }
