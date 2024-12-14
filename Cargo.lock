@@ -36,6 +36,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
+name = "android-tzdata"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
+
+[[package]]
+name = "android_system_properties"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "819e7219dbd41043ac279b19830f2efc897156490d7fd6ea916720117ee66311"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -158,6 +173,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "chrono"
+version = "0.4.39"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e36cc9d416881d2e24f9a963be5fb1cd90966419ac844274161d10488b3e825"
+dependencies = [
+ "android-tzdata",
+ "iana-time-zone",
+ "js-sys",
+ "num-traits",
+ "wasm-bindgen",
+ "windows-targets",
+]
+
+[[package]]
 name = "cli"
 version = "0.1.0"
 
@@ -244,9 +273,32 @@ version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97369cbbc041bc366949bc74d34658d6cda5621039731c6310521892a3a20ae0"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
+]
+
+[[package]]
+name = "dlopen"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "71e80ad39f814a9abe68583cd50a2d45c8a67561c3361ab8da240587dda80937"
+dependencies = [
+ "dlopen_derive",
+ "lazy_static",
+ "libc",
+ "winapi",
+]
+
+[[package]]
+name = "dlopen_derive"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f236d9e1b1fbd81cea0f9cbdc8dcc7e8ebcd80e6659cd7cb2ad5f6c05946c581"
+dependencies = [
+ "libc",
+ "quote 0.6.13",
+ "syn 0.15.44",
 ]
 
 [[package]]
@@ -534,9 +586,9 @@ dependencies = [
 
 [[package]]
 name = "hyper-util"
-version = "0.1.10"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df2dcfbe0677734ab2f3ffa7fa7bfd4706bfdc1ef393f2ee30184aed67e631b4"
+checksum = "cde7055719c54e36e95e8719f95883f22072a48ede39db7fc17a4e1d5281e9b9"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -547,8 +599,32 @@ dependencies = [
  "pin-project-lite",
  "socket2",
  "tokio",
+ "tower",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "iana-time-zone"
+version = "0.1.61"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "235e081f3925a06703c2d0117ea8b91f042756fd6e7a6e5d901e8ca1a996b220"
+dependencies = [
+ "android_system_properties",
+ "core-foundation-sys",
+ "iana-time-zone-haiku",
+ "js-sys",
+ "wasm-bindgen",
+ "windows-core 0.52.0",
+]
+
+[[package]]
+name = "iana-time-zone-haiku"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -664,9 +740,9 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ec89e9337638ecdc08744df490b221a7399bf8d164eb52a665454e60e075ad6"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -732,6 +808,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+
+[[package]]
 name = "libc"
 version = "0.2.168"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -772,7 +854,7 @@ dependencies = [
  "llrt_exceptions",
  "llrt_timers",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -781,7 +863,7 @@ version = "0.3.0-beta"
 source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775a5e06678c3"
 dependencies = [
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -791,7 +873,7 @@ source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775
 dependencies = [
  "llrt_encoding",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -814,7 +896,7 @@ dependencies = [
  "llrt_events",
  "llrt_stream",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "tokio",
 ]
 
@@ -835,7 +917,7 @@ source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775
 dependencies = [
  "llrt_build",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "tokio",
  "tracing",
 ]
@@ -856,7 +938,7 @@ dependencies = [
  "once_cell",
  "rand",
  "ring",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "uuid",
  "uuid-simd",
 ]
@@ -878,7 +960,7 @@ version = "0.3.0-beta"
 source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775a5e06678c3"
 dependencies = [
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "tracing",
 ]
 
@@ -888,7 +970,7 @@ version = "0.3.0-beta"
 source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775a5e06678c3"
 dependencies = [
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -902,7 +984,7 @@ dependencies = [
  "llrt_path",
  "llrt_utils",
  "ring",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "tokio",
 ]
 
@@ -927,7 +1009,7 @@ dependencies = [
  "llrt_utils",
  "once_cell",
  "pin-project-lite",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "rustls",
  "ryu",
  "tokio",
@@ -943,7 +1025,7 @@ dependencies = [
  "itoa",
  "llrt_build",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "ryu",
  "simd-json",
 ]
@@ -980,7 +1062,7 @@ name = "llrt_navigator"
 version = "0.3.0-beta"
 source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775a5e06678c3"
 dependencies = [
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -994,7 +1076,7 @@ dependencies = [
  "llrt_events",
  "llrt_stream",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "tokio",
  "tracing",
 ]
@@ -1009,7 +1091,7 @@ dependencies = [
  "llrt_utils",
  "num_cpus",
  "once_cell",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "sysinfo",
  "users",
  "whoami",
@@ -1025,7 +1107,7 @@ source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775
 dependencies = [
  "llrt_utils",
  "memchr",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -1034,7 +1116,7 @@ version = "0.3.0-beta"
 source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775a5e06678c3"
 dependencies = [
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -1043,7 +1125,7 @@ version = "0.3.0-beta"
 source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775a5e06678c3"
 dependencies = [
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -1055,7 +1137,7 @@ dependencies = [
  "llrt_context",
  "llrt_events",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "tokio",
 ]
 
@@ -1067,7 +1149,7 @@ dependencies = [
  "llrt_context",
  "llrt_utils",
  "once_cell",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "tokio",
 ]
 
@@ -1078,7 +1160,7 @@ source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775
 dependencies = [
  "libc",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -1087,7 +1169,7 @@ version = "0.3.0-beta"
 source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775a5e06678c3"
 dependencies = [
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "url",
 ]
 
@@ -1097,7 +1179,7 @@ version = "0.3.0-beta"
 source = "git+https://github.com/awslabs/llrt.git#a99f4339d0797bf216d341769fd775a5e06678c3"
 dependencies = [
  "llrt_build",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
  "tokio",
  "tracing",
 ]
@@ -1111,7 +1193,7 @@ dependencies = [
  "llrt_compression",
  "llrt_context",
  "llrt_utils",
- "rquickjs 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs",
 ]
 
 [[package]]
@@ -1255,9 +1337,9 @@ checksum = "3444646e286606587e49f3bcf1679b8cef1dc2c5ecc29ddacaffc305180d464b"
 dependencies = [
  "phf_generator",
  "phf_shared",
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -1267,6 +1349,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90fcb95eef784c2ac79119d1dd819e162b5da872ce6f3c3abe1e8ca1c082f72b"
 dependencies = [
  "siphasher",
+]
+
+[[package]]
+name = "pin-project"
+version = "1.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be57f64e946e500c8ee36ef6331845d40a93055567ec57e8fae13efd33759b95"
+dependencies = [
+ "pin-project-internal",
+]
+
+[[package]]
+name = "pin-project-internal"
+version = "1.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c0f5fad0874fc7abcd4d750e76917eaebbecaa2c20bde22e1dbeeba8beb758c"
+dependencies = [
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -1308,6 +1410,15 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
+version = "0.4.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
+dependencies = [
+ "unicode-xid",
+]
+
+[[package]]
+name = "proc-macro2"
 version = "1.0.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37d3544b3f2748c54e147655edb5025752e2303145b5aefb3c3ea2c78b973bb0"
@@ -1321,10 +1432,19 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "llrt_modules",
- "rquickjs 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rquickjs",
  "serde",
  "serde_yml",
  "tokio",
+]
+
+[[package]]
+name = "quote"
+version = "0.6.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ce23b6b870e8f94f81fb0a363d65d86675884b34a09043c81e5562f11c1f8e1"
+dependencies = [
+ "proc-macro2 0.4.30",
 ]
 
 [[package]]
@@ -1333,7 +1453,7 @@ version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5b9d34b8991d19d98081b46eacdd8eb58c6f2b201139f7c5f643cc155a633af"
 dependencies = [
- "proc-macro2",
+ "proc-macro2 1.0.92",
 ]
 
 [[package]]
@@ -1390,9 +1510,9 @@ version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bcc303e793d3734489387d205e9b186fac9c6cfacedd98cbb2e8a5943595f3e6"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -1419,29 +1539,12 @@ dependencies = [
 [[package]]
 name = "rquickjs"
 version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d16661bff09e9ed8e01094a188b463de45ec0693ade55b92ed54027d7ba7c40c"
-dependencies = [
- "rquickjs-core 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "rquickjs"
-version = "0.8.1"
 source = "git+https://github.com/DelSkayn/rquickjs.git#832be2f5144050451e3a354efd63b4703f97d13d"
 dependencies = [
  "either",
- "rquickjs-core 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "indexmap",
+ "rquickjs-core",
  "rquickjs-macro",
-]
-
-[[package]]
-name = "rquickjs-core"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c8db6379e204ef84c0811e90e7cc3e3e4d7688701db68a00d14a6db6849087b"
-dependencies = [
- "rquickjs-sys 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1450,9 +1553,13 @@ version = "0.8.1"
 source = "git+https://github.com/DelSkayn/rquickjs.git#832be2f5144050451e3a354efd63b4703f97d13d"
 dependencies = [
  "async-lock",
+ "chrono",
+ "dlopen",
  "either",
+ "indexmap",
+ "phf",
  "relative-path",
- "rquickjs-sys 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
+ "rquickjs-sys",
 ]
 
 [[package]]
@@ -1464,20 +1571,13 @@ dependencies = [
  "fnv",
  "ident_case",
  "indexmap",
+ "phf_generator",
+ "phf_shared",
  "proc-macro-crate",
- "proc-macro2",
- "quote",
- "rquickjs-core 0.8.1 (git+https://github.com/DelSkayn/rquickjs.git)",
- "syn",
-]
-
-[[package]]
-name = "rquickjs-sys"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bc352c6b663604c3c186c000cfcc6c271f4b50bc135a285dd6d4f2a42f9790a"
-dependencies = [
- "cc",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "rquickjs-core",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -1561,9 +1661,9 @@ version = "1.0.216"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46f859dbbf73865c6627ed570e78961cd3ac92407a2d117204c49232485da55e"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -1666,12 +1766,23 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "syn"
+version = "0.15.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ca4b3b69a77cbe1ffc9e198781b7acb0c7365a883670e8f1c1bc66fba79a5c5"
+dependencies = [
+ "proc-macro2 0.4.30",
+ "quote 0.6.13",
+ "unicode-xid",
+]
+
+[[package]]
+name = "syn"
 version = "2.0.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "919d3b74a5dd0ccd15aeb8f93e7006bd9e14c295087c9896a110f490752bcf31"
 dependencies = [
- "proc-macro2",
- "quote",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
  "unicode-ident",
 ]
 
@@ -1681,9 +1792,9 @@ version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8af7666ab7b6390ab78131fb5b0fce11d6b7a6951602017c35fa82800708971"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -1732,9 +1843,9 @@ version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "693d596312e88961bc67d7f1f97af8a70227d9f90c31bba5806eec004978d752"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -1778,6 +1889,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "tower"
+version = "0.4.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8fa9be0de6cf49e536ce1851f987bd21a43b771b09473c3549a6c853db37c1c"
+dependencies = [
+ "futures-core",
+ "futures-util",
+ "pin-project",
+ "pin-project-lite",
+ "tokio",
+ "tower-layer",
+ "tower-service",
+]
+
+[[package]]
+name = "tower-layer"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "121c2a6cda46980bb0fcd1647ffaf6cd3fc79a013de288782836f6df9c48780e"
+
+[[package]]
 name = "tower-service"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1800,9 +1932,9 @@ version = "0.1.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "395ae124c09f9e6918a2310af6038fba074bcf474ac352496d5910dd59a2226d"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -1837,6 +1969,12 @@ name = "unicode-segmentation"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
+
+[[package]]
+name = "unicode-xid"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc72304796d0818e357ead4e000d19c9c174ab23dc11093ac919054d20a6a7fc"
 
 [[package]]
 name = "untrusted"
@@ -1961,9 +2099,9 @@ checksum = "5f89bb38646b4f81674e8f5c3fb81b562be1fd936d84320f3264486418519c79"
 dependencies = [
  "bumpalo",
  "log",
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
  "wasm-bindgen-shared",
 ]
 
@@ -1973,7 +2111,7 @@ version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2cc6181fd9a7492eef6fef1f33961e3695e4579b9872a6f7c83aee556666d4fe"
 dependencies = [
- "quote",
+ "quote 1.0.37",
  "wasm-bindgen-macro-support",
 ]
 
@@ -1983,9 +2121,9 @@ version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30d7a95b763d3c45903ed6c81f156801839e5ee968bb07e534c44df0fcd330c2"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
@@ -2043,7 +2181,16 @@ version = "0.57.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12342cb4d8e3b046f3d80effd474a7a02447231330ef77d71daa6fbc40681143"
 dependencies = [
- "windows-core",
+ "windows-core 0.57.0",
+ "windows-targets",
+]
+
+[[package]]
+name = "windows-core"
+version = "0.52.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33ab640c8d7e35bf8ba19b884ba838ceb4fba93a4e8c65a9059d08afcfc683d9"
+dependencies = [
  "windows-targets",
 ]
 
@@ -2065,9 +2212,9 @@ version = "0.57.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9107ddc059d5b6fbfbffdfa7a7fe3e22a226def0b2608f72e9d552763d3e1ad7"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -2076,9 +2223,9 @@ version = "0.57.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29bee4b38ea3cde66011baa44dba677c432a78593e202392d1e9070cf2a7fca7"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -2240,9 +2387,9 @@ version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2380878cad4ac9aac1e2435f3eb4020e8374b5f13c296cb75b4620ff8e229154"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
  "synstructure",
 ]
 
@@ -2262,9 +2409,9 @@ version = "0.7.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa4f8080344d4671fb4e831a13ad1e68092748387dfc4f55e356242fae12ce3e"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -2282,9 +2429,9 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "595eed982f7d355beb85837f651fa22e90b3c044842dc7f2c2842c086f295808"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
  "synstructure",
 ]
 
@@ -2311,9 +2458,9 @@ version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6eafa6dfb17584ea3e2bd6e76e0cc15ad7af12b09abdd1ca55961bed9b1063c6"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]

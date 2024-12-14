@@ -8,5 +8,9 @@ serde_yml = "0.0.12"
 serde = { version = "1.0.216", features = ["derive"] }
 tokio = "1.42.0"
 anyhow = "1.0.94"
-rquickjs = "0.8.1"
+rquickjs = { git = "https://github.com/DelSkayn/rquickjs.git", version = "0.8.1", features = [
+    "full-async",
+    "parallel",
+    "rust-alloc",
+], default-features = false }
 llrt_modules = { git = "https://github.com/awslabs/llrt.git" }
