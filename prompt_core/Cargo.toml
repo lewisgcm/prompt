@@ -12,5 +12,8 @@ rquickjs = { git = "https://github.com/DelSkayn/rquickjs.git", version = "0.8.1"
     "full-async",
     "parallel",
     "rust-alloc",
+    "dump-leaks",
 ], default-features = false }
-llrt_modules = { git = "https://github.com/awslabs/llrt.git" }
+llrt_modules = { path = "/Users/lewis/Development/llrt/llrt_modules" }
+llrt_utils = { git = "https://github.com/awslabs/llrt.git" }
+futures = "0.3.31"

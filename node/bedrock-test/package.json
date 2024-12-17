@@ -1,0 +1,29 @@
+{
+  "name": "bedrock-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild main.ts --minify --bundle --format=esm --platform=node --outfile=out.js --inject cjs-shim.ts",
+    "run": "tsx main.ts",
+    "bb": "tsx esbuild.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.712.0",
+    "readable-stream": "^4.5.2",
+    "web-streams-polyfill": "^4.0.0"
+  },
+  "devDependencies": {
+    "@aws-sdk/credential-providers": "^3.712.0",
+    "@smithy/fetch-http-handler": "^4.1.2",
+    "@types/node": "^22.10.2",
+    "esbuild": "0.24.0",
+    "rollup": "4.28.1",
+    "tsx": "^4.19.2"
+  }
+}
