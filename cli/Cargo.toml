@@ -6,3 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = "4.5.23"
+prompt_core = { path = "../prompt_core" }
+tokio = "1.42.0"
+rquickjs = { git = "https://github.com/DelSkayn/rquickjs.git", version = "0.8.1", features = [
+    "full-async",
+    "parallel",
+    "rust-alloc",
+    "dump-leaks",
+], default-features = false }
+anyhow = "1.0.94"

@@ -35,15 +35,18 @@ const command = new ConverseCommand({
     ]
 });
 
-try {
-    console.log("here?")
-    const re = await client.send(command);
-    console.log(JSON.stringify(re));
-} catch (e) {
-    console.log("here2")
-    console.log(e);
+export const testy = async () => {
+    try {
+        console.log("here?")
+        const re = await client.send(command);
+        console.log(JSON.stringify(re));
+    } catch (e) {
+        console.log("here2")
+        console.log(e);
+    }
+    return ""; //client.send(command);
 }
 
-export const testy = async () => {
-    return ""; //client.send(command);
+export const test = async () => {
+    console.log('its working boss!');
 }

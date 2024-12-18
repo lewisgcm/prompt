@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 serde_yml = "0.0.12"
 serde = { version = "1.0.216", features = ["derive"] }
-tokio = "1.42.0"
+tokio = {  version = "1.42.0", features = ["rt", "rt-multi-thread"] }
 anyhow = "1.0.94"
 rquickjs = { git = "https://github.com/DelSkayn/rquickjs.git", version = "0.8.1", features = [
     "full-async",
@@ -15,5 +15,4 @@ rquickjs = { git = "https://github.com/DelSkayn/rquickjs.git", version = "0.8.1"
     "dump-leaks",
 ], default-features = false }
 llrt_modules = { path = "/Users/lewis/Development/llrt/llrt_modules" }
-llrt_utils = { git = "https://github.com/awslabs/llrt.git" }
 futures = "0.3.31"

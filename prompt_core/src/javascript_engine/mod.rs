@@ -1,11 +1,8 @@
 pub mod modules;
 
-use crate::javascript_engine::modules::console::Console;
-use futures::FutureExt;
-use rquickjs::loader::{BuiltinLoader, BuiltinResolver, Loader, ModuleLoader};
-use rquickjs::{async_with, AsyncContext, AsyncRuntime, CatchResultExt, Error};
-use std::future::Future;
-use std::io::Write;
+use crate::javascript_engine::modules::console::Logger;
+use rquickjs::loader::{BuiltinLoader, BuiltinResolver, ModuleLoader};
+use rquickjs::{async_with, AsyncContext, AsyncRuntime, Error};
 
 pub struct JavascriptEngineModule {
     pub name: String,
@@ -25,7 +22,7 @@ impl JavascriptEngine {
 
 pub async fn new(
     modules: Vec<JavascriptEngineModule>,
-    console: &'static (dyn Console + Send + Sync),
+    console: &(dyn Logger + Send + Sync),
 ) -> anyhow::Result<JavascriptEngine, anyhow::Error> {
     let runtime = AsyncRuntime::new()?;
     runtime.set_max_stack_size(512 * 1024).await;

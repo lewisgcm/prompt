@@ -23948,15 +23948,15 @@ function dew$c() {
 function dew$b() {
   if (_dewExec$b) return exports$b;
   _dewExec$b = true;
-  var test = {
+  var test2 = {
     __proto__: null,
     foo: {}
   };
   var $Object = Object;
   exports$b = function hasProto() {
     return {
-      __proto__: test
-    }.foo === test.foo && !(test instanceof $Object);
+      __proto__: test2
+    }.foo === test2.foo && !(test2 instanceof $Object);
   };
   return exports$b;
 }
@@ -32391,18 +32391,22 @@ var command = new import_client_bedrock_runtime.ConverseCommand({
     }
   ]
 });
-try {
-  console.log("here?");
-  const re = await client.send(command);
-  console.log(JSON.stringify(re));
-} catch (e) {
-  console.log("here2");
-  console.log(e);
-}
 var testy = async () => {
+  try {
+    console.log("here?");
+    const re = await client.send(command);
+    console.log(JSON.stringify(re));
+  } catch (e) {
+    console.log("here2");
+    console.log(e);
+  }
   return "";
 };
+var test = async () => {
+  console.log("its working boss!");
+};
 export {
+  test,
   testy
 };
 /*! Bundled license information:

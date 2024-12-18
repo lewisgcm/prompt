@@ -4,7 +4,7 @@ use rquickjs::function::Func;
 use rquickjs::{qjs, Ctx, Error, Module, Object, Value};
 use tokio::time::Instant;
 
-fn require<'js>(ctx: Ctx<'js>, name: String) -> Result<Value<'js>, Error> {
+fn require(ctx: Ctx, name: String) -> Result<Value, Error> {
     let import_promise = Module::import(&ctx, name)?;
     let rt = unsafe { qjs::JS_GetRuntime(ctx.as_raw().as_ptr()) };
     let mut deadline = Instant::now();

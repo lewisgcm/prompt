@@ -1,12 +1,9 @@
-use prompt_core::javascript_engine::modules::console::{Console, PrintStream};
 use prompt_core::javascript_engine::{modules, JavascriptEngineModule};
 use prompt_core::{eval_module, javascript_engine};
 use rquickjs::promise::MaybePromise;
-use rquickjs::{CaughtResult, FromJs, Function, Value};
+use rquickjs::{CaughtResult, Function, Value};
 use std::io;
 use std::io::Write;
-
-const PRINTER: PrintStream = modules::console::PrintStream {};
 
 // #[tokio::test]
 // async fn test_mad_bug_request() {
@@ -120,6 +117,7 @@ const PRINTER: PrintStream = modules::console::PrintStream {};
 
 #[tokio::test]
 async fn test_mad_ting() {
+    let printer = modules::console::ConsoleLogger::new();
     let js = std::fs::read_to_string("/Users/lewis/Development/prompt-rs/node/bedrock-test/out.js")
         .unwrap();
     let engine_result = javascript_engine::new(
@@ -127,7 +125,7 @@ async fn test_mad_ting() {
             name: String::from("test"),
             code: String::from(js.as_str()),
         }],
-        &PRINTER,
+        &printer,
     )
     .await;
 
