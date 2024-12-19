@@ -1,7 +1,7 @@
 mod commands;
 mod util;
 
-use clap::{arg, Command};
+use clap::{arg, ArgAction, Command};
 use std::error::Error;
 
 fn cli() -> Command {
@@ -45,7 +45,15 @@ fn cli() -> Command {
         .subcommand(
             Command::new("setup")
                 .about("Interactively configure prompt models, chats, or plugins")
-                .arg(home_dir_arg.clone()),
+                .arg(home_dir_arg.clone())
+                .arg(arg!(<LIST_MODEL_PLUGINS> "List installed model plugins")
+                    .long("list-model-plugins")
+                    .action(ArgAction::SetTrue)
+                    .required(false))
+                .arg(arg!(<LIST_TOOL_PLUGINS> "List installed tool plugins")
+                    .long("list-tool-plugins")
+                    .action(ArgAction::SetTrue)
+                    .required(false)),
         )
 }
 

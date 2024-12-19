@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -8,6 +9,7 @@ use std::path::PathBuf;
 const CONFIG_FILE_NAME: &str = "config.yml";
 const MODEL_PLUGIN_DIRECTORY: &str = "model_plugins";
 const TOOL_PLUGIN_DIRECTORY: &str = "tool_plugins";
+const CHATS_DIRECTORY: &str = "chats";
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ModelConfig {
@@ -44,6 +46,22 @@ pub struct Plugin {
     pub name: String,
     pub plugin_type: PluginType,
     pub location: PathBuf,
+}
+
+impl Clone for Plugin {
+    fn clone(&self) -> Plugin {
+        Plugin {
+            name: self.name.clone(),
+            plugin_type: self.plugin_type.clone(),
+            location: self.location.clone(),
+        }
+    }
+}
+
+impl Display for Plugin {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
 }
 
 impl PromptConfig {
@@ -91,13 +109,18 @@ impl PromptConfig {
             PluginType::Model => MODEL_PLUGIN_DIRECTORY,
         };
 
-        fs::copy(
-            plugin.location,
-            self.prompt_home
-                .join(sub_directory)
-                .join(plugin.name)
-                .join(".js"),
-        )?;
+        let install_location = self
+            .prompt_home
+            .join(sub_directory)
+            .join(plugin.name.clone() + ".js");
+
+        fs::copy(plugin.location, install_location.clone())?;
+
+        println!(
+            "Plugin '{}' installed to '{}'.",
+            plugin.name.clone(),
+            install_location.display()
+        );
 
         Ok(())
     }
