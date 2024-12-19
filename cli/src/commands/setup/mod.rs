@@ -4,6 +4,7 @@ mod validators;
 use clap::ArgMatches;
 use homedir::my_home;
 use prompt_core::config;
+use prompt_core::config::PluginType;
 use std::collections::VecDeque;
 use std::error::Error;
 use std::path::PathBuf;
@@ -31,12 +32,10 @@ pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn Error>>
         .or_else(|| user_home_directory)
         .ok_or_else(|| "could not resolve home directory")?;
 
-    let has_setup_previously = config::Config::exists(home_directory.clone())?;
+    let config = config::PromptConfig::from_prompt_home(home_directory)?;
+    let installed_plugins = config.list_plugins(PluginType::Model)?;
 
-    let config =
-        config::Config::from_directory(home_directory.clone())?.unwrap_or(config::Config::empty());
-
-    let start_command = if !has_setup_previously {
+    let start_command = if installed_plugins.is_empty() {
         Some(Setup::AddModelPlugin)
     } else {
         input_prompt::prompt_for_next_command()?
@@ -58,7 +57,7 @@ pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn Error>>
         }
     }
 
-    config.to_directory(home_directory)?;
+    config.write()?;
 
     Ok(())
 }

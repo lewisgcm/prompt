@@ -28,67 +28,72 @@ pub struct Config {
     pub models: Option<HashMap<String, ModelConfig>>,
 }
 
-#[derive(Clone, Copy)]
+pub struct PromptConfig {
+    pub prompt_home: PathBuf,
+    pub config: Config,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PluginType {
     Tool,
     Model,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Plugin {
     pub name: String,
     pub plugin_type: PluginType,
     pub location: PathBuf,
 }
 
-impl Config {
-    pub fn empty() -> Config {
-        Config {
-            default_model: Option::default(),
-            models: Option::default(),
-        }
-    }
+impl PromptConfig {
+    pub fn from_prompt_home(path: PathBuf) -> Result<PromptConfig, Box<dyn std::error::Error>> {
+        fs::create_dir_all(&path)?;
+        fs::create_dir_all(path.join(TOOL_PLUGIN_DIRECTORY))?;
+        fs::create_dir_all(path.join(MODEL_PLUGIN_DIRECTORY))?;
 
-    pub fn from_directory(path: PathBuf) -> Result<Option<Config>, Box<dyn std::error::Error>> {
-        let file_exists = Config::exists(path.clone())?;
+        let file_exists = fs::exists(path.join(CONFIG_FILE_NAME))?;
         if file_exists {
             let contents = fs::File::open(path.join(CONFIG_FILE_NAME))?;
             let config: Config = serde_yml::from_reader(contents)?;
 
-            return Ok(Some(config));
+            return Ok(PromptConfig {
+                config,
+                prompt_home: path,
+            });
         }
 
-        Ok(Option::default())
+        Ok(PromptConfig {
+            prompt_home: path,
+            config: Config {
+                default_model: Option::default(),
+                models: Option::default(),
+            },
+        })
     }
 
-    pub fn to_directory(&self, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        fs::create_dir_all(&path)?;
-        let contents = serde_yml::to_string(&self)?;
+    pub fn write(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let contents = serde_yml::to_string(&self.config)?;
         let mut file = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(path.join(CONFIG_FILE_NAME))?;
+            .open(self.prompt_home.join(CONFIG_FILE_NAME))?;
 
         file.write(contents.as_bytes())?;
 
         Ok(())
     }
 
-    pub fn exists(path: PathBuf) -> std::io::Result<bool> {
-        fs::exists(path.join(CONFIG_FILE_NAME))
-    }
-
-    pub fn copy_plugin_to_directory(prompt_home: PathBuf, plugin: Plugin) -> std::io::Result<()> {
+    pub fn install_plugin(&self, plugin: Plugin) -> std::io::Result<()> {
         let sub_directory = match plugin.plugin_type {
             PluginType::Tool => TOOL_PLUGIN_DIRECTORY,
             PluginType::Model => MODEL_PLUGIN_DIRECTORY,
         };
 
-        fs::create_dir_all(prompt_home.join(sub_directory))?;
-
         fs::copy(
             plugin.location,
-            prompt_home
+            self.prompt_home
                 .join(sub_directory)
                 .join(plugin.name)
                 .join(".js"),
@@ -98,7 +103,7 @@ impl Config {
     }
 
     pub fn list_plugins(
-        prompt_home: PathBuf,
+        &self,
         plugin_type: PluginType,
     ) -> Result<Vec<Plugin>, Box<dyn std::error::Error>> {
         let sub_directory = match plugin_type {
@@ -106,16 +111,18 @@ impl Config {
             PluginType::Model => MODEL_PLUGIN_DIRECTORY,
         };
 
-        let plugin_path_exists = fs::exists(prompt_home.join(sub_directory))?;
+        let plugin_path_exists = fs::exists(self.prompt_home.join(sub_directory))?;
         if !plugin_path_exists {
             return Ok(Vec::new());
         }
 
         let mut plugins: Vec<Plugin> = Vec::new();
-        let plugin_files = fs::read_dir(prompt_home.join(sub_directory))?;
+        let plugin_files = fs::read_dir(self.prompt_home.join(sub_directory))?;
         for plugin_file in plugin_files {
             if let Ok(file) = plugin_file {
-                if file.path().is_file() {
+                if file.path().is_file()
+                    && file.path().extension() == Some(std::ffi::OsStr::new("js"))
+                {
                     let path = PathBuf::from(file.path());
                     let name = path
                         .file_stem()
