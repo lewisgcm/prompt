@@ -82,10 +82,16 @@ pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn Error>>
                 };
                 let plugin = input_prompt::prompt_for_plugin_location()?;
                 config.install_plugin(Plugin {
-                    name: plugin.name,
-                    location: plugin.location,
+                    name: plugin.name.clone(),
+                    location: plugin.location.clone(),
                     plugin_type,
                 })?;
+
+                println!(
+                    "Plugin '{}' installed to '{}'.",
+                    plugin.name,
+                    plugin.location.display()
+                );
             }
         }
 

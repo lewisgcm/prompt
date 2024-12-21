@@ -140,12 +140,6 @@ impl PromptConfig {
 
         fs::copy(plugin.location, install_location.clone())?;
 
-        println!(
-            "Plugin '{}' installed to '{}'.",
-            plugin.name.clone(),
-            install_location.display()
-        );
-
         Ok(())
     }
 

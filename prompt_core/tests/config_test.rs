@@ -1,5 +1,6 @@
-use prompt_core::config::{ModelConfigSettingType, Plugin, PluginType, PromptConfig};
+use prompt_core::config::{ModelConfig, ModelConfigSettingType, Plugin, PluginType, PromptConfig};
 use std::collections::HashMap;
+use std::fs;
 use std::path::PathBuf;
 
 #[test]
@@ -48,10 +49,7 @@ fn test_load_config() {
                 String::from("region"),
                 Some(ModelConfigSettingType::String(String::from("us-east-1")))
             ),
-            (
-                String::from("test"),
-                None
-            ),
+            (String::from("test"), None),
             (
                 String::from("integer"),
                 Some(ModelConfigSettingType::Integer(5))
@@ -67,6 +65,56 @@ fn test_load_config() {
         ]),
         *model_config.settings.as_ref().unwrap()
     );
+}
+
+#[test]
+fn test_write_config() {
+    let home = PathBuf::from("tests/config/write");
+    let _ = fs::remove_file(home.join("config.yml").clone());
+    let result = PromptConfig::from_prompt_home(home.clone());
+    assert!(result.is_ok());
+
+    let mut config_result = result.unwrap();
+    config_result.config.default_model = Some("bedrock".to_string());
+
+    config_result.config.add_model(
+        String::from("model-id"),
+        ModelConfig {
+            settings: Some(HashMap::from([
+                (
+                    String::from("model-id"),
+                    Some(ModelConfigSettingType::String(String::from(
+                        "anthropic.claude-3-haiku-20240307-v1:0",
+                    ))),
+                ),
+                (
+                    String::from("region"),
+                    Some(ModelConfigSettingType::String(String::from("us-east-1"))),
+                ),
+                (String::from("test"), None),
+                (
+                    String::from("integer"),
+                    Some(ModelConfigSettingType::Integer(5)),
+                ),
+                (
+                    String::from("bool"),
+                    Some(ModelConfigSettingType::Bool(true)),
+                ),
+                (
+                    String::from("float"),
+                    Some(ModelConfigSettingType::Float(5.20240307)),
+                ),
+            ])),
+            provider: "bedrock".to_string(),
+            plugins: None,
+        },
+    );
+
+    assert!(config_result.write().is_ok(), "expected config to write");
+
+    let written_config = PromptConfig::from_prompt_home(home.clone()).unwrap();
+
+    assert_eq!(written_config.config, config_result.config);
 }
 
 #[test]
