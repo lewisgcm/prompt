@@ -4,6 +4,8 @@ import {BedrockRuntimeClient, ConverseCommand} from "@aws-sdk/client-bedrock-run
 import {BedrockClient, ListFoundationModelsCommand} from "@aws-sdk/client-bedrock";
 import {FetchHttpHandler, streamCollector} from "@smithy/fetch-http-handler";
 
+import {Configuration, ConfigurationStep, ModelPlugin, Prompt, PromptResponse} from '@prompt/types';
+
 const defaultCredentialConfig = {
     filepath: "~/.aws/credentials",
     clientConfig: {
@@ -23,36 +25,16 @@ const defaultClientConfig = {
     streamCollector: streamCollector
 }
 
-interface ModelPlugin {
-    configure(configuration: Configuration): void;
-
-    configuration(): ConfigurationStep[];
-
-    test(): Promise<void>
-}
-
-type ConfigurationType = string | number | boolean | null;
-
-interface Configuration {
-    [key: string]: ConfigurationType
-}
-
-interface ConfigurationInput {
-    displayName: string;
-    type: 'select' | 'bool' | 'integer' | 'float' | 'string';
-    options?: string[];
-    required: boolean;
-}
-
-interface ConfigurationStep {
-    input: (context: Configuration) => Promise<{ [key: string]: ConfigurationInput }> | {
-        [key: string]: ConfigurationInput
-    };
-}
-
 class BedrockModelPlugin implements ModelPlugin {
     runtimeClient: BedrockRuntimeClient;
     modelId: string;
+
+    async prompt(prompt: Prompt): Promise<PromptResponse[]> {
+        return [{
+            type: 'text',
+            value: 'Hello from the model!'
+        }];
+    }
 
     configure(configuration: Configuration): void {
         const credentialsProvider = fromSSO({

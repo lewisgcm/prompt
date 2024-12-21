@@ -1,19 +1,18 @@
 {
-  "name": "bedrock-test",
+  "name": "@prompt/models",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild main.ts --minify --bundle --format=esm --platform=node --outfile=out.js --inject cjs-shim.ts",
-    "run": "tsx main.ts",
-    "bb": "tsx esbuild.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsx esbuild.ts",
+    "release": "NODE_ENV=production tsx esbuild.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@prompt/types": "*",
     "@aws-sdk/client-bedrock": "^3.716.0",
     "@aws-sdk/client-bedrock-runtime": "^3.712.0",
     "readable-stream": "^4.5.2",

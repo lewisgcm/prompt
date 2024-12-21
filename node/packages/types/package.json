@@ -1,0 +1,9 @@
+{
+  "name": "@prompt/types",
+  "version": "1.0.0",
+  "types": "index.d.ts",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
