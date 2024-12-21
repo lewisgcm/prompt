@@ -9,7 +9,7 @@ const defaultCredentialConfig = {
     clientConfig: {
         region: 'us-east-1',
         requestHandler: new FetchHttpHandler({
-            requestTimeout: 30_000,
+            requestTimeout: 1000,
         }),
         streamCollector: streamCollector
     },
@@ -18,7 +18,7 @@ const defaultCredentialConfig = {
 const defaultClientConfig = {
     region: 'us-east-1',
     requestHandler: new FetchHttpHandler({
-        requestTimeout: 30_000,
+        requestTimeout: 1000,
     }),
     streamCollector: streamCollector
 }
@@ -34,7 +34,7 @@ interface ModelPlugin {
 type ConfigurationType = string | number | boolean | null;
 
 interface Configuration {
-    [key: string]: ConfigurationType | ConfigurationType[]
+    [key: string]: ConfigurationType
 }
 
 interface ConfigurationInput {
@@ -51,7 +51,24 @@ interface ConfigurationStep {
 }
 
 class BedrockModelPlugin implements ModelPlugin {
+    runtimeClient: BedrockRuntimeClient;
+    modelId: string;
+
     configure(configuration: Configuration): void {
+        const credentialsProvider = fromSSO({
+            ...defaultCredentialConfig,
+            clientConfig: {
+                ...defaultCredentialConfig.clientConfig,
+                region: configuration.region,
+            }
+        });
+
+        this.modelId = configuration['model-id'] as string;
+        this.runtimeClient = new BedrockRuntimeClient({
+            ...defaultClientConfig,
+            region: configuration.region as string,
+            credentials: credentialsProvider
+        });
     }
 
     configuration(): ConfigurationStep[] {

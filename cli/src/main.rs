@@ -18,22 +18,29 @@ fn cli() -> Command {
             Command::new("converse")
                 .about("Converse with an AI agent")
                 .arg(home_dir_arg.clone())
-                .arg(arg!(<MODEL> "Model to use for the prompt").short('m').long("model"))
+                .arg(arg!(<MODEL> "Model to use for the prompt")
+                    .short('m')
+                    .long("model")
+                    .required(false))
                 .arg(
                     arg!(<CHAT_ID> "Chat identifier to store message history (letters, numbers and '_' only)")
                         .short('c')
-                        .long("chat-id"),
+                        .long("chat-id")
+                        .required(false),
                 )
                 .arg(
-                    arg!(<INPUT_TEXT> "Input text to send the model"),
+                    arg!(<INPUT_TEXT> "Input text to send the model")
+                        .required(false),
                 )
                 .arg(
                     arg!(<INPUT_IMAGE> "Input image to send the model")
-                        .long("i"),
+                        .long("i")
+                        .required(false),
                 )
                 .arg(
                     arg!(<INPUT_DOCUMENT> "Input document to send the model")
-                        .long("d"),
+                        .long("d")
+                        .required(false),
                 ),
         )
         .subcommand(

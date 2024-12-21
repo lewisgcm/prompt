@@ -36,7 +36,7 @@ pub async fn plugin_test<'js>(ctx: &'_ Ctx<'js>, plugin: Object<'js>) -> Result<
     let test_method_invocation_promise: MaybePromise =
         test_method.call(()).catch(ctx).to_result()?;
 
-    let _ = test_method_invocation_promise
+    let _: () = test_method_invocation_promise
         .into_future()
         .await
         .catch(ctx)

@@ -44050,7 +44050,7 @@ var defaultCredentialConfig = {
   clientConfig: {
     region: "us-east-1",
     requestHandler: new import_fetch_http_handler.FetchHttpHandler({
-      requestTimeout: 3e4
+      requestTimeout: 1e3
     }),
     streamCollector: import_fetch_http_handler.streamCollector
   }
@@ -44058,12 +44058,27 @@ var defaultCredentialConfig = {
 var defaultClientConfig = {
   region: "us-east-1",
   requestHandler: new import_fetch_http_handler.FetchHttpHandler({
-    requestTimeout: 3e4
+    requestTimeout: 1e3
   }),
   streamCollector: import_fetch_http_handler.streamCollector
 };
 var BedrockModelPlugin = class {
+  runtimeClient;
+  modelId;
   configure(configuration) {
+    const credentialsProvider = fromSSO({
+      ...defaultCredentialConfig,
+      clientConfig: {
+        ...defaultCredentialConfig.clientConfig,
+        region: configuration.region
+      }
+    });
+    this.modelId = configuration["model-id"];
+    this.runtimeClient = new import_client_bedrock_runtime.BedrockRuntimeClient({
+      ...defaultClientConfig,
+      region: configuration.region,
+      credentials: credentialsProvider
+    });
   }
   configuration() {
     return [
