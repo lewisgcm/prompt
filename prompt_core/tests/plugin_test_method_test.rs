@@ -61,7 +61,7 @@ async fn test_no_test_method() {
                 assert!(plugin_result.is_err(), "expected plugin error");
                 assert_eq!(
                     plugin_result.err().unwrap().to_string(),
-                    "Method 'test' not found on plugin."
+                    "Method 'test' not found in plugin."
                 );
             }
 

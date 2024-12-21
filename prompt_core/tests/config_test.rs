@@ -1,4 +1,4 @@
-use prompt_core::config::{Plugin, PluginType, PromptConfig};
+use prompt_core::config::{ModelConfigSettingType, Plugin, PluginType, PromptConfig};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -27,7 +27,6 @@ fn test_load_config_optionals() {
 fn test_load_config() {
     let home = PathBuf::from("tests/config/populated");
     let result = PromptConfig::from_prompt_home(home);
-    println!("{:#?}", result);
     assert!(result.is_ok());
 
     let config_result = result.unwrap();
@@ -36,17 +35,38 @@ fn test_load_config() {
     let binding = config_result.config.models.unwrap();
     let model_config = binding.get("claude").unwrap();
 
-    assert_eq!("bedrock", model_config.provider);
-    // assert_eq!(
-    //     HashMap::from([
-    //         (
-    //             String::from("model-id"),
-    //             String::from("anthropic.claude-3-haiku-20240307-v1:0")
-    //         ),
-    //         (String::from("region"), String::from("us-east-1"))
-    //     ]),
-    //     model_config.settings.unwrap().clone()
-    // );
+    assert_eq!("bedrock", model_config.provider.clone());
+    assert_eq!(
+        HashMap::from([
+            (
+                String::from("model-id"),
+                Some(ModelConfigSettingType::String(String::from(
+                    "anthropic.claude-3-haiku-20240307-v1:0"
+                )))
+            ),
+            (
+                String::from("region"),
+                Some(ModelConfigSettingType::String(String::from("us-east-1")))
+            ),
+            (
+                String::from("test"),
+                None
+            ),
+            (
+                String::from("integer"),
+                Some(ModelConfigSettingType::Integer(5))
+            ),
+            (
+                String::from("bool"),
+                Some(ModelConfigSettingType::Bool(true))
+            ),
+            (
+                String::from("float"),
+                Some(ModelConfigSettingType::Float(5.20240307))
+            )
+        ]),
+        *model_config.settings.as_ref().unwrap()
+    );
 }
 
 #[test]

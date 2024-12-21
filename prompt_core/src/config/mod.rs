@@ -10,7 +10,7 @@ const CONFIG_FILE_NAME: &str = "config.yml";
 const MODEL_PLUGIN_DIRECTORY: &str = "model_plugins";
 const TOOL_PLUGIN_DIRECTORY: &str = "tool_plugins";
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum ModelConfigSettingType {
     String(String),
