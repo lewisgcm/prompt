@@ -1,7 +1,7 @@
 use prompt_core::javascript_engine::{modules, JavascriptEngineModule};
 use prompt_core::{eval_module, javascript_engine};
 use rquickjs::promise::MaybePromise;
-use rquickjs::{CaughtResult, Function, Value};
+use rquickjs::{CaughtResult, Function, Object, Value};
 use std::io;
 use std::io::Write;
 
@@ -169,6 +169,63 @@ async fn test_mad_ting() {
     io::stderr().flush().unwrap();
     io::stdout().flush().unwrap();
 }
+
+#[tokio::test]
+async fn test_mad_ting_two() {
+    let printer = modules::console::ConsoleLogger::new();
+    let js = std::fs::read_to_string("/Users/lewis/Development/prompt-rs/node/bedrock-test/out.js")
+        .unwrap();
+    let engine_result = javascript_engine::new(
+        vec![JavascriptEngineModule {
+            name: String::from("test"),
+            code: String::from(js.as_str()),
+        }],
+        &printer,
+    )
+    .await;
+
+    match engine_result {
+        Err(err) => {
+            eprintln!("Engine error: {}", err);
+        }
+        Ok(engine) => {
+            let result = eval_module!(&engine, "test", |ctx, value| {
+                let object = value.as_object().unwrap();
+                let plugin: Object = object.get("plugin").unwrap();
+                let configuration_method: Function = plugin.get("configuration").unwrap();
+                let res: Value = configuration_method.call(()).unwrap();
+
+                if let Some(steps) = res.as_array() {
+                    for step in steps.iter::<Value>() {
+                        if let Ok(step) = step {
+                            if let Some(step) = step.as_object() {
+                                let input: Function = step.get("input").unwrap();
+                                let output: MaybePromise = input.call(()).unwrap();
+                                let val: Value = output.into_future().await.unwrap();
+                                println!("{:#?}", ctx.json_stringify(val));
+                            }
+                        }
+                    }
+                }
+
+                // let handler_result = handler_promise.into_future::<Value>().await?;
+                // let json = ctx.json_stringify(handler_result).unwrap();
+                // println!("{:#?}", json);
+                return Ok(String::from("test"));
+            });
+
+            if let Err(err) = result {
+                eprintln!("Engine error: {:#?}", err);
+            }
+
+            engine.idle().await;
+        }
+    }
+
+    io::stderr().flush().unwrap();
+    io::stdout().flush().unwrap();
+}
+
 //
 // #[tokio::test]
 // async fn test_basic_module() {

@@ -366,6 +366,7 @@ dependencies = [
  "clap",
  "homedir",
  "inquire",
+ "loading",
  "prompt_core",
  "regex",
  "rquickjs",
@@ -1651,6 +1652,12 @@ dependencies = [
  "llrt_utils",
  "rquickjs",
 ]
+
+[[package]]
+name = "loading"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8dc328a46d3468b5cf72d5e511620079b8f38b692f78bebed3377b27c214e35"
 
 [[package]]
 name = "lock_api"

@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 serde_yml = "0.0.12"
 serde = { version = "1.0.216", features = ["derive"] }
-tokio = {  version = "1.42.0", features = ["rt", "rt-multi-thread"] }
+tokio = { version = "1.42.0", features = ["rt", "rt-multi-thread"] }
 anyhow = "1.0.94"
 rquickjs = { git = "https://github.com/DelSkayn/rquickjs.git", version = "0.8.1", features = [
     "full-async",

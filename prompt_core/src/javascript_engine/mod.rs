@@ -1,8 +1,9 @@
 pub mod modules;
+pub mod util;
 
 use crate::javascript_engine::modules::console::Logger;
 use rquickjs::loader::{BuiltinLoader, BuiltinResolver, ModuleLoader};
-use rquickjs::{async_with, AsyncContext, AsyncRuntime, Error};
+use rquickjs::{async_with, AsyncContext, AsyncRuntime};
 
 pub struct JavascriptEngineModule {
     pub name: String,
@@ -23,7 +24,7 @@ impl JavascriptEngine {
 pub async fn new(
     modules: Vec<JavascriptEngineModule>,
     console: &(dyn Logger + Send + Sync),
-) -> anyhow::Result<JavascriptEngine, anyhow::Error> {
+) -> Result<JavascriptEngine, anyhow::Error> {
     let runtime = AsyncRuntime::new()?;
     runtime.set_max_stack_size(512 * 1024).await;
     runtime.set_gc_threshold(20 * 1024 * 1024).await;
@@ -83,7 +84,7 @@ pub async fn new(
         modules::require::init(&ctx)?;
         modules::console::init(&ctx, console)?;
 
-        Ok::<(), Error>(())
+        Ok::<(), rquickjs::Error>(())
     })
     .await?;
 
@@ -97,14 +98,15 @@ macro_rules! eval_module {
     // The `expr` designator is used for expressions.
     ($script_engine:expr, $name:expr, |$ctx:ident,$value:ident| { $($t:tt)* }) => {
         rquickjs::async_with!($script_engine.context => |$ctx| {
-            use rquickjs::{CatchResultExt};
+            use rquickjs::{CatchResultExt, Value};
+            use anyhow::format_err;
 
             let promise = rquickjs::Module::import(&$ctx, $name).catch(&$ctx);
             return match promise {
                     Ok(promise) => {
                         let result = promise.into_future::<Value>().await.catch(&$ctx);
                         return if let Err(err) = result {
-                            Err(anyhow::Error::msg(format!("{:#?}", err)))
+                            Err(format_err!("{}", err))
                         } else {
                             let $value = result.unwrap();
 
@@ -112,7 +114,7 @@ macro_rules! eval_module {
                         };
                     },
                     Err(err) => {
-                        Err(anyhow::Error::msg(format!("{:#?}", err)))
+                        Err(format_err!("{}", err))
                     }
                 }
             })

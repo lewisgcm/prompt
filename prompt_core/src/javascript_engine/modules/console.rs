@@ -31,7 +31,7 @@ fn log(_log_level: LogLevel, _ctx: Ctx, args: Rest<Value>) -> Result<(), Error> 
     args.iter().for_each(|arg| {
         print!("{:?}", arg);
     });
-    println!("");
+    println!();
 
     Ok(())
 }

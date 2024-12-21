@@ -1,3 +1,3 @@
 pub mod config;
-pub mod provider;
+pub mod plugin;
 pub mod javascript_engine;

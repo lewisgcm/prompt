@@ -9,12 +9,20 @@ use std::path::PathBuf;
 const CONFIG_FILE_NAME: &str = "config.yml";
 const MODEL_PLUGIN_DIRECTORY: &str = "model_plugins";
 const TOOL_PLUGIN_DIRECTORY: &str = "tool_plugins";
-const CHATS_DIRECTORY: &str = "chats";
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ModelConfigSettingType {
+    String(String),
+    Integer(i32),
+    Float(f64),
+    Bool(bool),
+}
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ModelConfig {
     #[serde(rename = "settings")]
-    pub settings: Option<HashMap<String, String>>,
+    pub settings: Option<HashMap<String, Option<ModelConfigSettingType>>>,
     #[serde(rename = "provider")]
     pub provider: String,
     #[serde(rename = "plugins")]
@@ -30,6 +38,22 @@ pub struct Config {
     pub models: Option<HashMap<String, ModelConfig>>,
 }
 
+impl Config {
+    pub fn add_model(&mut self, model_name: String, model_config: ModelConfig) {
+        match &mut self.models {
+            Some(ref mut models) => {
+                models.insert(model_name, model_config);
+            }
+            None => {
+                let mut map = HashMap::new();
+                map.insert(model_name, model_config);
+                self.models = Some(map);
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct PromptConfig {
     pub prompt_home: PathBuf,
     pub config: Config,

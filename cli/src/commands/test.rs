@@ -1,13 +1,9 @@
-use crate::util::map_js_err;
-use anyhow::format_err;
 use clap::ArgMatches;
-use prompt_core::eval_module;
 use prompt_core::javascript_engine::JavascriptEngineModule;
-use rquickjs::promise::MaybePromise;
-use rquickjs::Value;
+use prompt_core::{eval_module, plugin};
 use std::fs;
 
-pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), anyhow::Error> {
     let logger = prompt_core::javascript_engine::modules::console::ConsoleLogger::new();
 
     println!("Creating JS engine...");
@@ -27,28 +23,13 @@ pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn std::er
     println!("Running module...");
 
     let () = eval_module!(&js_engine, "test_module", |ctx, value| {
-        let object = value.as_object();
-        if let Some(object) = object {
-            let handler: Value = object.get("test").map_err(|e| map_js_err(e, ctx.clone()))?;
+        let plugin = plugin::plugin_from_module(&ctx, value)?;
+        let _ = plugin::plugin_test(&ctx, plugin).await?;
 
-            return match handler.as_function() {
-                None => Err(format_err!("No function named 'test' defined in module.")),
-                Some(handler) => {
-                    let handler_promise: MaybePromise =
-                        handler.call(()).map_err(|e| map_js_err(e, ctx.clone()))?;
-
-                    let () = handler_promise
-                        .into_future()
-                        .await
-                        .map_err(|e| map_js_err(e, ctx))?;
-
-                    Ok(())
-                }
-            };
-        }
-
-        Ok(())
+        Ok::<(), anyhow::Error>(())
     })?;
+
+    println!("Finished running module.");
 
     Ok(())
 }

@@ -3,6 +3,7 @@ mod validators;
 
 use clap::ArgMatches;
 use homedir::my_home;
+use inquire::{Confirm, Text};
 use prompt_core::config;
 use prompt_core::config::{Plugin, PluginType};
 use std::collections::VecDeque;
@@ -32,7 +33,7 @@ pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn Error>>
         .or_else(|| user_home_directory)
         .ok_or_else(|| "could not resolve home directory")?;
 
-    let config = config::PromptConfig::from_prompt_home(home_directory)?;
+    let mut config = config::PromptConfig::from_prompt_home(home_directory)?;
     let installed_model_plugins = config.list_plugins(PluginType::Model)?;
     let installed_tool_plugins = config.list_plugins(PluginType::Tool)?;
 
@@ -55,17 +56,23 @@ pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn Error>>
     while let Some(next_command) = command_queue.pop_front() {
         match next_command {
             Setup::AddModel => {
+                let name =
+                    Text::new("What will the model be named (letters, numbers and '_' only)?")
+                        .with_validator(validators::plugin_name_validator)
+                        .prompt()?;
+
                 let model_plugins = config.list_plugins(PluginType::Model)?;
                 let tool_plugins = config.list_plugins(PluginType::Tool)?;
 
-                input_prompt::prompt_for_add_model_config(
-                    &model_plugins,
-                    &tool_plugins,
-                )?;
-                // 1.Get list of available model plugins
-                // 2. Get model config setting
-                //  2.1. Call a 'config' option in the model module, which returns a list of config inputs
-                // 3. Prompt based on the inputs
+                let model_config =
+                    input_prompt::prompt_for_add_model_config(&model_plugins, &tool_plugins)
+                        .await?;
+
+                config.config.add_model(name.to_string(), model_config);
+
+                if Confirm::new("Set as default model?").prompt()? {
+                    config.config.default_model = Some(name.to_string());
+                }
             }
             Setup::AddModelPlugin | Setup::AddToolPlugin => {
                 let plugin_type = if next_command == Setup::AddModelPlugin {
@@ -80,6 +87,10 @@ pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn Error>>
                     plugin_type,
                 })?;
             }
+        }
+
+        if let Some(new_command) = input_prompt::prompt_for_next_command()? {
+            command_queue.push_back(new_command);
         }
     }
 
