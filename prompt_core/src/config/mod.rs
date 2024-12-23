@@ -1,3 +1,4 @@
+use anyhow::format_err;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
@@ -6,6 +7,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::PathBuf;
 
+pub const PROMPT_DEFAULT_DIRECTORY: &str = ".prompt";
 const CONFIG_FILE_NAME: &str = "config.yml";
 const MODEL_PLUGIN_DIRECTORY: &str = "model_plugins";
 const TOOL_PLUGIN_DIRECTORY: &str = "tool_plugins";
@@ -19,7 +21,7 @@ pub enum ModelConfigSettingType {
     Bool(bool),
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct ModelConfig {
     #[serde(rename = "settings")]
     pub settings: Option<HashMap<String, Option<ModelConfigSettingType>>>,
@@ -89,7 +91,7 @@ impl Display for Plugin {
 }
 
 impl PromptConfig {
-    pub fn from_prompt_home(path: PathBuf) -> Result<PromptConfig, Box<dyn std::error::Error>> {
+    pub fn from_prompt_home(path: PathBuf) -> Result<PromptConfig, anyhow::Error> {
         fs::create_dir_all(&path)?;
         fs::create_dir_all(path.join(TOOL_PLUGIN_DIRECTORY))?;
         fs::create_dir_all(path.join(MODEL_PLUGIN_DIRECTORY))?;
@@ -143,10 +145,33 @@ impl PromptConfig {
         Ok(())
     }
 
-    pub fn list_plugins(
+    pub fn get_model_plugin(
         &self,
-        plugin_type: PluginType,
-    ) -> Result<Vec<Plugin>, Box<dyn std::error::Error>> {
+        model_name: String,
+    ) -> Result<(ModelConfig, Plugin), anyhow::Error> {
+        if let Some(models) = &self.config.models {
+            let config = models
+                .get(&model_name)
+                .ok_or(format_err!("model {} not found", model_name.clone()))?
+                .clone();
+
+            return Ok((
+                config.clone(),
+                Plugin {
+                    name: model_name.clone(),
+                    plugin_type: PluginType::Model,
+                    location: self
+                        .prompt_home
+                        .join(MODEL_PLUGIN_DIRECTORY)
+                        .join(config.provider.clone() + ".js"),
+                },
+            ));
+        }
+
+        Err(format_err!("no models available"))
+    }
+
+    pub fn list_plugins(&self, plugin_type: PluginType) -> Result<Vec<Plugin>, anyhow::Error> {
         let sub_directory = match plugin_type {
             PluginType::Tool => TOOL_PLUGIN_DIRECTORY,
             PluginType::Model => MODEL_PLUGIN_DIRECTORY,
@@ -167,12 +192,12 @@ impl PromptConfig {
                     let path = PathBuf::from(file.path());
                     let name = path
                         .file_stem()
-                        .ok_or(format!(
+                        .ok_or(format_err!(
                             "Could not get plugin name for path: {}",
                             path.display()
                         ))?
                         .to_str()
-                        .ok_or("Could not map plugin name to string.".to_string())?;
+                        .ok_or(format_err!("Could not map plugin name to string."))?;
 
                     plugins.push(Plugin {
                         name: name.to_string(),

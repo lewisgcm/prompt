@@ -1,5 +1,5 @@
 use prompt_core::javascript_engine::{modules, JavascriptEngineModule};
-use prompt_core::plugin::{plugin_from_module, plugin_model_configure, plugin_test};
+use prompt_core::plugin::{plugin_from_module, plugin_model_configuration, plugin_test};
 use prompt_core::{eval_module, javascript_engine};
 
 #[tokio::test]

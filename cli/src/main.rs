@@ -76,6 +76,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Some(("setup", sub_matches)) => {
             commands::setup::run_command(sub_matches).await?;
         }
+        Some(("converse", sub_matches)) => {
+            commands::converse::run_command(sub_matches).await?;
+        }
         _ => println!("Command not found"),
     }
 

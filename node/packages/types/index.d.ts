@@ -12,7 +12,7 @@ export type PromptResponse = { type: 'text', value: string };
 export interface ModelPlugin {
     prompt(prompt: Prompt): Promise<PromptResponse[]>;
 
-    configure(configuration: Configuration): void;
+    configure(configuration: Configuration): Promise<void>;
 
     configuration(): ConfigurationStep[];
 

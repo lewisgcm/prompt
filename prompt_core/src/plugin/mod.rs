@@ -1,12 +1,18 @@
+mod util;
+
 use crate::config::ModelConfigSettingType;
 use crate::javascript_engine::util::CaughtResultExt;
+use crate::plugin::util::JSTypeExt;
 use anyhow::format_err;
+use rquickjs::prelude::This;
 use rquickjs::promise::MaybePromise;
-use rquickjs::{CatchResultExt, Ctx, Function, Object, Value};
+use rquickjs::{Array, CatchResultExt, Ctx, Function, Object, Value};
 use std::collections::HashMap;
 
 const PLUGIN_CONFIGURATION_METHOD_NAME: &str = "configuration";
+const PLUGIN_CONFIGURE_METHOD_NAME: &str = "configure";
 const CONFIGURATION_INPUT_FIELD_NAME: &str = "input";
+const PLUGIN_PROMPT_METHOD_NAME: &str = "prompt";
 
 pub fn plugin_from_module<'js>(
     _ctx: &Ctx<'js>,
@@ -53,7 +59,88 @@ pub struct ModelInput {
     pub options: Option<Vec<String>>,
 }
 
-pub async fn plugin_model_configure<'js, F>(
+#[derive(Debug, PartialEq, Eq)]
+pub struct ModelPromptBinaryPayload {
+    pub value: Vec<u8>,
+    pub format: String,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum ModelPrompt {
+    Text(String),
+    Image(ModelPromptBinaryPayload),
+    Document(ModelPromptBinaryPayload),
+}
+
+pub async fn plugin_model_prompt<'js>(
+    ctx: &'_ Ctx<'js>,
+    plugin: &'_ Object<'js>,
+    model_prompt: ModelPrompt,
+) -> Result<Vec<ModelPrompt>, anyhow::Error> {
+    let method: Function = plugin.get(PLUGIN_PROMPT_METHOD_NAME).map_err(|_| {
+        format_err!(
+            "Method '{}' not found in model plugin.",
+            PLUGIN_PROMPT_METHOD_NAME
+        )
+    })?;
+
+    let prompt_value: Value<'js> = model_prompt.to_value(ctx.clone())?;
+    let method_invocation_promise: MaybePromise = method
+        .call((This(plugin.clone()), prompt_value))
+        .catch(ctx)
+        .to_result()?;
+    let responses: Array = method_invocation_promise
+        .into_future()
+        .await
+        .catch(ctx)
+        .to_result()?;
+
+    let mut model_responses: Vec<ModelPrompt> = Vec::new();
+    for response in responses {
+        if let Ok(response) = response {
+            model_responses.push(ModelPrompt::from_value(response)?);
+        }
+    }
+
+    Ok(model_responses)
+}
+
+pub async fn plugin_model_configure<'js>(
+    ctx: &'_ Ctx<'js>,
+    plugin: &'_ Object<'js>,
+    settings: Option<HashMap<String, Option<ModelConfigSettingType>>>,
+) -> Result<(), anyhow::Error> {
+    let method: Function = plugin.get(PLUGIN_CONFIGURE_METHOD_NAME).map_err(|_| {
+        format_err!(
+            "Method '{}' not found in model plugin.",
+            PLUGIN_CONFIGURE_METHOD_NAME
+        )
+    })?;
+
+    let object = Object::new(ctx.clone())?;
+    if let Some(settings) = settings {
+        for setting in settings {
+            if let Some(setting_value) = setting.1 {
+                object.set(setting.0, setting_value.to_value(ctx.clone())?)?;
+            }
+        }
+    }
+
+    let method_invocation_promise: MaybePromise = method
+        .call((This(plugin.clone()), object))
+        .catch(ctx)
+        .to_result()?;
+
+    let _: () = method_invocation_promise
+        .into_future()
+        .await
+        .catch(ctx)
+        .to_result()?;
+
+    Ok(())
+}
+
+pub async fn plugin_model_configuration<'js, F>(
     ctx: &'_ Ctx<'js>,
     plugin: Object<'js>,
     get_input: F,
@@ -129,20 +216,8 @@ where
     let mut settings: HashMap<String, Option<ModelConfigSettingType>> = HashMap::new();
     for setting in input_context.props::<String, Value>() {
         if let Ok(setting) = setting {
-            if let Some(number) = setting.1.as_int() {
-                settings.insert(setting.0, Some(ModelConfigSettingType::Integer(number)));
-            } else if let Some(float) = setting.1.as_float() {
-                settings.insert(setting.0, Some(ModelConfigSettingType::Float(float)));
-            } else if let Some(string) = setting.1.as_string() {
-                settings.insert(
-                    setting.0,
-                    Some(ModelConfigSettingType::String(string.to_string()?)),
-                );
-            } else if let Some(bool) = setting.1.as_bool() {
-                settings.insert(setting.0, Some(ModelConfigSettingType::Bool(bool)));
-            } else {
-                return Err(format_err!("cannot resolve type of {}", setting.0));
-            }
+            let value = ModelConfigSettingType::from_value(setting.1.clone())?;
+            settings.insert(setting.0, Some(value.clone()));
         }
     }
 

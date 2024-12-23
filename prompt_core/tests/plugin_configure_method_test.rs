@@ -1,5 +1,5 @@
 use prompt_core::javascript_engine::{modules, JavascriptEngineModule};
-use prompt_core::plugin::{plugin_from_module, plugin_model_configure};
+use prompt_core::plugin::{plugin_from_module, plugin_model_configuration};
 use prompt_core::{eval_module, javascript_engine};
 
 #[tokio::test]
@@ -32,7 +32,7 @@ async fn test_simple_configure_method() {
             );
 
             if let Ok(plugin) = plugin {
-                let plugin_result = plugin_model_configure(&ctx, plugin, |x| {
+                let plugin_result = plugin_model_configuration(&ctx, plugin, |x| {
                     let opt = x.options.unwrap().get(0).unwrap().clone();
                     let s = rquickjs::String::from_str(ctx.clone(), opt.as_str())?;
                     return Ok(s.as_value().clone());

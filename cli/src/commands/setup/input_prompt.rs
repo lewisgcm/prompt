@@ -5,7 +5,7 @@ use crate::commands::setup::{
 use inquire::{Confirm, CustomType, MultiSelect, Select, Text};
 use prompt_core::config::{ModelConfig, Plugin};
 use prompt_core::javascript_engine::{modules, JavascriptEngineModule};
-use prompt_core::plugin::{plugin_from_module, plugin_model_configure};
+use prompt_core::plugin::{plugin_from_module, plugin_model_configuration};
 use prompt_core::{eval_module, javascript_engine};
 use std::error::Error;
 use std::path::PathBuf;
@@ -37,7 +37,7 @@ pub async fn prompt_for_add_model_config(
 
     let config = eval_module!(&engine, selected_model.name.clone(), |ctx, value| {
         let plugin = plugin_from_module(&ctx, value)?;
-        let plugin_result = plugin_model_configure(&ctx, plugin, |x| {
+        let plugin_result = plugin_model_configuration(&ctx, plugin, |x| {
             return match x.input_type.as_str() {
                 "select" => {
                     let options = x

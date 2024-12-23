@@ -5,12 +5,11 @@ use clap::ArgMatches;
 use homedir::my_home;
 use inquire::{Confirm, Text};
 use prompt_core::config;
-use prompt_core::config::{Plugin, PluginType};
+use prompt_core::config::{Plugin, PluginType, PROMPT_DEFAULT_DIRECTORY};
 use std::collections::VecDeque;
 use std::error::Error;
 use std::path::PathBuf;
 
-const PROMPT_DEFAULT_DIRECTORY: &str = ".prompt";
 const SETUP_MODEL_DISPLAY: &'static str = "Add Model";
 const SETUP_ADD_MODEL_PLUGIN_DISPLAY: &'static str = "Add Model Plugin";
 const SETUP_ADD_TOOL_PLUGIN_DISPLAY: &'static str = "Add Tool Plugin";
