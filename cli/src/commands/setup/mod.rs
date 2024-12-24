@@ -1,14 +1,13 @@
 mod input_prompt;
 mod validators;
 
+use crate::util::get_home_dir;
 use clap::ArgMatches;
-use homedir::my_home;
 use inquire::{Confirm, Text};
 use prompt_core::config;
-use prompt_core::config::{Plugin, PluginType, PROMPT_DEFAULT_DIRECTORY};
+use prompt_core::config::{Plugin, PluginType};
 use std::collections::VecDeque;
 use std::error::Error;
-use std::path::PathBuf;
 
 const SETUP_MODEL_DISPLAY: &'static str = "Add Model";
 const SETUP_ADD_MODEL_PLUGIN_DISPLAY: &'static str = "Add Model Plugin";
@@ -22,16 +21,7 @@ enum Setup {
     AddToolPlugin,
 }
 pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    let user_home_directory = my_home()?.map(|home_dir| {
-        PathBuf::from(home_dir.to_str().unwrap().to_string()).join(PROMPT_DEFAULT_DIRECTORY)
-    });
-
-    let home_directory = sub_matches
-        .get_one::<String>("DIR")
-        .map(PathBuf::from)
-        .or_else(|| user_home_directory)
-        .ok_or_else(|| "could not resolve home directory")?;
-
+    let home_directory = get_home_dir(sub_matches)?;
     let mut config = config::PromptConfig::from_prompt_home(home_directory)?;
     let installed_model_plugins = config.list_plugins(PluginType::Model)?;
     let installed_tool_plugins = config.list_plugins(PluginType::Tool)?;

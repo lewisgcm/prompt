@@ -29,6 +29,8 @@ pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), anyhow::Error> 
         Ok::<(), anyhow::Error>(())
     })?;
 
+    js_engine.idle().await;
+
     println!("Finished running module.");
 
     Ok(())

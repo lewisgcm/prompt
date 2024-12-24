@@ -1,7 +1,6 @@
+use crate::util::get_home_dir;
 use anyhow::format_err;
 use clap::ArgMatches;
-use homedir::my_home;
-use prompt_core::config::PROMPT_DEFAULT_DIRECTORY;
 use prompt_core::javascript_engine::JavascriptEngineModule;
 use prompt_core::plugin::{ModelPrompt, ModelPromptBinaryPayload};
 use prompt_core::{config, eval_module, plugin};
@@ -9,16 +8,7 @@ use std::fs;
 use std::path::PathBuf;
 
 pub async fn run_command(sub_matches: &ArgMatches) -> Result<(), anyhow::Error> {
-    let user_home_directory = my_home()?.map(|home_dir| {
-        PathBuf::from(home_dir.to_str().unwrap().to_string()).join(PROMPT_DEFAULT_DIRECTORY)
-    });
-
-    let home_directory = sub_matches
-        .get_one::<String>("DIR")
-        .map(PathBuf::from)
-        .or_else(|| user_home_directory)
-        .ok_or_else(|| format_err!("could not resolve home directory"))?;
-
+    let home_directory = get_home_dir(sub_matches)?;
     let prompt = get_prompt_from_input(sub_matches)?;
     let config = config::PromptConfig::from_prompt_home(home_directory)?;
 

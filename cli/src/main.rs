@@ -1,4 +1,5 @@
 mod commands;
+mod util;
 
 use clap::{arg, ArgAction, Command};
 use std::error::Error;

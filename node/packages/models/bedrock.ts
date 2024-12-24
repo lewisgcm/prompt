@@ -158,26 +158,27 @@ class BedrockModelPlugin implements ModelPlugin {
 
     async test(): Promise<void> {
         const credentialsProvider = fromSSO(defaultCredentialConfig);
-        const runtimeClient = new BedrockRuntimeClient({
-            ...defaultClientConfig,
-            credentials: credentialsProvider
-        });
-
-        const command = new ConverseCommand({
-            modelId: "anthropic.claude-3-haiku-20240307-v1:0",
-            messages: [
-                {
-                    role: "user",
-                    content: [
-                        {
-                            text: "Hello!",
-                        }
-                    ]
-                }
-            ]
-        });
-        const response = await runtimeClient.send(command);
-        console.log(JSON.stringify(response.output));
+        console.log(JSON.stringify(await credentialsProvider()));
+        // const runtimeClient = new BedrockRuntimeClient({
+        //     ...defaultClientConfig,
+        //     credentials: credentialsProvider
+        // });
+        //
+        // const command = new ConverseCommand({
+        //     modelId: "anthropic.claude-3-haiku-20240307-v1:0",
+        //     messages: [
+        //         {
+        //             role: "user",
+        //             content: [
+        //                 {
+        //                     text: "Hello!",
+        //                 }
+        //             ]
+        //         }
+        //     ]
+        // });
+        // const response = await runtimeClient.send(command);
+        // console.log(JSON.stringify(response.output));
     }
 }
 
