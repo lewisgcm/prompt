@@ -1,5 +1,5 @@
 [workspace]
-members = ["cli", "prompt_core"]
+members = ["cli", "prompt_core", "ui/src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]

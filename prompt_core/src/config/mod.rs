@@ -84,6 +84,11 @@ impl Clone for Plugin {
     }
 }
 
+#[derive(Debug)]
+pub struct Chat {
+    pub name: String,
+}
+
 impl Display for Plugin {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name)
