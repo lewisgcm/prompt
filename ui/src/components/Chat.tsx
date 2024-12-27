@@ -7,6 +7,7 @@ import * as TopBar from './TopBar';
 import {RootState} from "../store.ts";
 import {open} from "../state/sidebar.ts";
 import {open as openSettings} from "../state/settings.ts";
+import {invoke} from "@tauri-apps/api/core";
 
 function AttachmentButton() {
     return <button className="h-8 w-8 mr-4 align-middle border hover:border-black border-transparent rounded p-1">
@@ -33,7 +34,10 @@ export function Chat() {
                 <p>WBR 2024</p>
             </span>
             <span className="flex-grow"/>
-            <TopBar.Button>
+            <TopBar.Button onClick={async () => {
+                const result = await invoke('list_chats');
+                console.log(result);
+            }}>
                 <Trash3 className="size-full"/>
             </TopBar.Button>
             <TopBar.Button onClick={() => dispatch(openSettings())}>

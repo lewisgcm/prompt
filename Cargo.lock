@@ -3973,6 +3973,7 @@ dependencies = [
 name = "prompt-ui"
 version = "0.1.0"
 dependencies = [
+ "prompt_core",
  "serde",
  "serde_json",
  "tauri",

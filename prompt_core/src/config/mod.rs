@@ -11,6 +11,7 @@ pub const PROMPT_DEFAULT_DIRECTORY: &str = ".prompt";
 const CONFIG_FILE_NAME: &str = "config.yml";
 const MODEL_PLUGIN_DIRECTORY: &str = "model_plugins";
 const TOOL_PLUGIN_DIRECTORY: &str = "tool_plugins";
+const CHATS_DIRECTORY: &str = "chats";
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
@@ -84,7 +85,7 @@ impl Clone for Plugin {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Chat {
     pub name: String,
 }
@@ -100,6 +101,7 @@ impl PromptConfig {
         fs::create_dir_all(&path)?;
         fs::create_dir_all(path.join(TOOL_PLUGIN_DIRECTORY))?;
         fs::create_dir_all(path.join(MODEL_PLUGIN_DIRECTORY))?;
+        fs::create_dir_all(path.join(CHATS_DIRECTORY))?;
 
         let file_exists = fs::exists(path.join(CONFIG_FILE_NAME))?;
         if file_exists {
@@ -174,6 +176,36 @@ impl PromptConfig {
         }
 
         Err(format_err!("no models available"))
+    }
+
+    pub fn list_chats(&self) -> Result<Vec<Chat>, anyhow::Error> {
+        let directory = self.prompt_home.join(CHATS_DIRECTORY);
+        let path_exists = fs::exists(self.prompt_home.join(directory.clone()))?;
+        if !path_exists {
+            return Ok(Vec::new());
+        }
+
+        let mut chats: Vec<Chat> = Vec::new();
+
+        chats.push(Chat {
+            name: "QBR 2024".to_string(),
+        });
+
+        chats.push(Chat {
+            name: "WBR 2024".to_string(),
+        });
+
+        // let files = fs::read_dir(directory)?;
+        // for file in files {
+        //     let entry = file?;
+        //     if entry.file_type()?.is_file() {
+        //         chats.push(Chat {
+        //
+        //         })
+        //     }
+        // }
+
+        Ok(chats)
     }
 
     pub fn list_plugins(&self, plugin_type: PluginType) -> Result<Vec<Plugin>, anyhow::Error> {
